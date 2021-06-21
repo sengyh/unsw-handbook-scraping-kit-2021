@@ -3,6 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import time
+import random
 
 def traverse_all_subjects(driver):
   
@@ -18,17 +19,23 @@ def traverse_all_subjects(driver):
   print(curr_url)
   
   WebDriverWait(driver, 5).until(EC.visibility_of_all_elements_located((By.XPATH,subject_list_xpath)))
-  i = 0
-  for subject in subject_list:
-    WebDriverWait(driver, 5).until(EC.visibility_of_all_elements_located((By.XPATH,subject_list_xpath)))
-    #print(subject.get_attribute('innerHTML'))
-    if (i == 3):
-      break
-    subject_codename = subject.find_element_by_tag_name('h4').get_attribute('innerHTML')
-    #if (subject_codename != 'MATH: Mathematics'):
-    #  continue
-    traverse_all_courses(driver, subject, subject_codename)
-    time.sleep(2)
-    i += 1
 
+  subject_nlist = []
+  for subject in subject_list:
+    subject_codename = subject.find_element_by_tag_name('h4').get_attribute('innerHTML')
+    subject_nlist.append(subject_codename)
+
+  i = 0
+  for subjectn in subject_nlist:
+    #if (i == 1):
+    #  break
+    subjectn = subjectn.replace('&amp;','&')
+    sn_xpath = "//h4[contains(text(), '" + subjectn + "')]"
+    print(sn_xpath)
+    #if (subjectn != "BABS: Biotechnology & Biomolecular Sciences"):
+    #  continue
+    subject_link = driver.find_element_by_xpath(sn_xpath)
+    traverse_all_courses(driver, subject_link, subjectn)
+    wait = random.randint(3,8)
+    i+=1
   return
