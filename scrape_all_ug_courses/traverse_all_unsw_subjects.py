@@ -25,17 +25,20 @@ def traverse_all_subjects(driver):
     subject_codename = subject.find_element_by_tag_name('h4').get_attribute('innerHTML')
     subject_nlist.append(subject_codename)
 
-  i = 0
+  i = 1
+  start_here = False
   for subjectn in subject_nlist:
-    #if (i == 1):
-    #  break
     subjectn = subjectn.replace('&amp;','&')
     sn_xpath = "//h4[contains(text(), '" + subjectn + "')]"
-    print(sn_xpath)
-    #if (subjectn != "BABS: Biotechnology & Biomolecular Sciences"):
-    #  continue
-    subject_link = driver.find_element_by_xpath(sn_xpath)
-    traverse_all_courses(driver, subject_link, subjectn)
-    wait = random.randint(3,8)
+    #if (subjectn == "ZZEN: Engineering Accelerated"):
+    #  start_here = True
+    if start_here:
+      subject_link = driver.find_element_by_xpath(sn_xpath)
+      driver.execute_script("arguments[0].scrollIntoView(true);", subject_link)
+      time.sleep(1.5)
+      traverse_all_courses(driver, subject_link, subjectn)
+      wait = random.randint(2,5)
+      time.sleep(wait)
     i+=1
   return
+ 

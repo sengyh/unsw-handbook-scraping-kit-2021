@@ -13,20 +13,25 @@ def traverse_all_courses(driver, subject, codename):
   subject_xpath = "//h4[contains(text(),'" + codename + "')]"
   subject_link = driver.find_element_by_xpath(subject_xpath)
   driver.execute_script("arguments[0].click();", subject_link)
+  Wait(driver,5)
   # entered subject courses page
   # check if there are any ug courses
-      #str = "We couldn't find anything for"
-      #str_xp = "//p[contains(text(),\"" + str + "\")]"
-      #print(str_xp)
-      #courses_exist = driver.find_elements_by_xpath(str_xp)
-      #print(courses_exist)
-      #if courses_exist:
-      #  return
+  str = "We couldn't find anything for"
+  str_xp = "//p[contains(text(),\"" + str + "\")]"
+  try:
+    Wait(driver,10).until(EC.visibility_of_element_located((By.XPATH, str_xp)))
+    go_back_to_subject_page(driver)
+    return
+  except:
+    pass
+  #print(str_xp)
+
+
+  # normal page w courses
   Wait(driver, 5).until(EC.presence_of_element_located((By.ID, 'subject-Courses')))
-  Wait(driver,5)
   one_page_only = False
   npb = driver.find_elements_by_id('pagination-page-next')
-  print(npb)
+  #print(npb)
   if not npb:
     one_page_only = True
   else:
@@ -68,7 +73,7 @@ def full_ten_traversal(driver):
   return
 
 def last_page_traversal(driver):
-  print('last page')
+  #print('last page')
   course_link_xpath = "//a[@class='cs-item css-vgk9p5-StyledLink-StyledAILink exq3dcx2']"
   course_list = driver.find_elements_by_xpath(course_link_xpath)
   for course in course_list:
