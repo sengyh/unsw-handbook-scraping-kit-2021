@@ -3,7 +3,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 import os
-from traverse_all_unsw_subjects import traverse_all_subjects
+from .traverse_all_unsw_subjects import traverse_all_subjects
 
 def main():
   opts = Options()

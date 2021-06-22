@@ -1,4 +1,4 @@
-from traverse_all_courses import traverse_all_courses
+from .traverse_all_courses import traverse_all_courses
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
