@@ -11,10 +11,12 @@ def scrape_course_pages():
       if (subject_code): #== 'MATH'):
         course_list = subject.get('courses')
         i = 0
+        start = False
         for course in course_list:
-          if (i == 1):
+          if (i == 5):
             break         
-          if (course == 'BINF3010'):
+          if (course == 'COMP2521' or start is True):
+            start = True
             print(course)
             get_course_page_html(course)
             i+=1

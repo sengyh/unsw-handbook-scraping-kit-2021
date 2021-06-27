@@ -18,6 +18,7 @@ def get_course_page_html(course):
   course_info_html = driver.find_element_by_css_selector(course_info_selector).get_attribute('outerHTML')
   parse_course_page_html(course, course_info_html)
   driver.quit()
+  time.sleep(random.randint(8,17))
   return
 
 def setup_driver():

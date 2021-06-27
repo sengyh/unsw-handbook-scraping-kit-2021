@@ -25,7 +25,7 @@ def save_course_page(course, course_info_html):
 
 def extract_course_info(p_soup):
   head = p_soup.find("div", {"class":"css-1999l0b-Box-Flex-StyledFlex e3iudi70"})
-  print(head)
+  #print(head)
   body = p_soup.find("div",{"class": "css-et39we-Box-Flex-Row-Row-Main e1gw5x5n1"})
-  print(body)
+  #print(body)
   return
