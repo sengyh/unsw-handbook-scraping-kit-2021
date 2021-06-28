@@ -13,9 +13,9 @@ def scrape_course_pages():
         i = 0
         start = False
         for course in course_list:
-          if (i == 5):
+          if (i == 10):
             break         
-          if (course == 'COMP2521' or start is True):
+          if (course == 'COMP3153' or start is True):
             start = True
             print(course)
             get_course_page_html(course)

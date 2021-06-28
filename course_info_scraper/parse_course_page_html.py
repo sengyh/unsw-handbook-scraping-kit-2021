@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
 from pathlib import Path
+from course_page_parser import parse_head, parse_body
 import os
 import re
+import json
 
 def parse_course_page_html(course_code, page_html):
   soup = BeautifulSoup(page_html, 'lxml')
@@ -25,7 +27,13 @@ def save_course_page(course, course_info_html):
 
 def extract_course_info(p_soup):
   head = p_soup.find("div", {"class":"css-1999l0b-Box-Flex-StyledFlex e3iudi70"})
-  #print(head)
+  head_dict = parse_head(head)
   body = p_soup.find("div",{"class": "css-et39we-Box-Flex-Row-Row-Main e1gw5x5n1"})
-  #print(body)
+  body_dict = parse_body(body)
+  course_dict = head_dict
+  course_dict.update(body_dict)
+  course_json = json.dumps(course_dict)
+  print(course_json)
+  c = json.loads(course_json)
+  #print(c['Overview'].rstrip())
   return
