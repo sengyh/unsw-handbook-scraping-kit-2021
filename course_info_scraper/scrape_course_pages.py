@@ -20,9 +20,13 @@ def scrape_course_pages():
     for subject in data['all_subjects']:
       course_list = subject.get('courses')
       for course in course_list:   
-        if (course == 'COMP3901' or start is True):
+        if (course == 'LAWS3356' or start is True):
           start = True
           course_dict = get_course_page_html(course)
+          if (course_dict == "SHTF"):
+            print('exiting early')
+            start = False
+            break
           ac_dict.update(course_dict)
           print(course)
   f.close()
