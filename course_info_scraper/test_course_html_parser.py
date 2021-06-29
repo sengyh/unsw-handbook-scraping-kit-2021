@@ -3,7 +3,43 @@ from pathlib import Path
 import sys
 import os
 import json
-from course_page_parser import parse_head, parse_body
+from course_page_parser import create_course_json
+
+# need to create course file, put empty json if dont exist
+# open and append new course objs 
+# TODO: file operations are cooked, come back later
+def traverse_dir():
+  hc_path = Path.cwd() / '..' / 'data' / 'html' / 'courses'
+  tc_file = Path.cwd() / '..' / 'data' / 'json' / 'test_courses.json'
+  # if file doesnt exist, make file later and write into it
+  if not os.path.exists(tc_file):
+    tcf = open(tc_file, 'w')
+    tcf.write("{}")
+    tcf.close()
+  # if file exists, get json, append, wipe file and rewrite it with updated json
+  tcf = open(tc_file, 'r')
+  tcdict = json.load(tcf)
+  tcf.close()
+  open(tc_file, 'w').close()
+  for root, dirs, files in os.walk(hc_path):
+    cont = False
+    for fi in files:
+      # this part is fine
+      if (fi == "COMP1511.html"):
+        cont = True
+      if cont:
+        f = open(os.path.join(root, fi), 'r')
+        soup = BeautifulSoup(f, 'lxml')
+        head = soup.find("div", {"class":"css-1999l0b-Box-Flex-StyledFlex e3iudi70"})
+        body = soup.find("div",{"class": "css-et39we-Box-Flex-Row-Row-Main e1gw5x5n1"})
+        course_json = create_course_json(head, body)
+        #print(type(course_json))
+        tcdict.update(course_json)
+        f.close()
+  tcf = open(tc_file, 'w')
+  json.dump(tcdict, tcf, sort_keys=True)
+  tcf.close()
+  return
 
 
 def test():
@@ -18,17 +54,13 @@ def test():
   f = open(page_path, "r")
   soup = BeautifulSoup(f, 'lxml')
   head = soup.find("div", {"class":"css-1999l0b-Box-Flex-StyledFlex e3iudi70"})
-  head_dict = parse_head(head)
   body = soup.find("div",{"class": "css-et39we-Box-Flex-Row-Row-Main e1gw5x5n1"})
-  body_dict = parse_body(body)
-  course_dict = head_dict
-  course_dict.update(body_dict)
-  course_json = json.dumps(course_dict)
-  #print(course_json)
-  c = json.loads(course_json)
-  #print(c['Overview'].rstrip())
-  print(c)
+  course_json = create_course_json(head, body)
+  print(json.dumps(course_json, indent=2))
+  print(course_json)
   f.close()
+  return
 
 if __name__ == "__main__":
-  test()
+  traverse_dir()
+  #test()
