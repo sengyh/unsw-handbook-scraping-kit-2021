@@ -8,18 +8,10 @@ from parse_course_page_html import parse_course_page_html
 import time
 import random
 
-def get_course_page_html(course):
-  driver = setup_driver()
-  course_url = "https://www.handbook.unsw.edu.au/undergraduate/courses/2021/" + course + "/"
-  #print(course_url)
-  driver.get(course_url)
-  course_info_selector = 'div.css-9lgwr7-Box-Container-SContainer.el608uh0'
-  Wait(driver,60).until(EC.visibility_of_element_located((By.CSS_SELECTOR, course_info_selector)))
-  course_info_html = driver.find_element_by_css_selector(course_info_selector).get_attribute('outerHTML')
-  course_json = parse_course_page_html(course, course_info_html)
-  driver.quit()
-  time.sleep(random.randint(8,17))
-  return course_json
+def faculty_scraper():
+
+
+  return
 
 def setup_driver():
   OPTS = Options()
@@ -31,3 +23,7 @@ def setup_driver():
   DRIVER_PATH = '../chromedriver'
   driver = Chrome(options=OPTS, executable_path=DRIVER_PATH)
   return driver
+
+
+if __name__ == "__main__":
+  faculty_scraper()
