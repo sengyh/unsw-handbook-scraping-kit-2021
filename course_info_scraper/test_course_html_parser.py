@@ -24,9 +24,9 @@ def traverse_dir():
     cont = False
     dirs.sort()
     for fi in sorted(files):
-      print(fi)
       if (fi == 'LAWS3356.html' or cont is True):
         cont = True
+        print(fi)
         f = open(os.path.join(root, fi), 'r')
         soup = BeautifulSoup(f, 'lxml')
         head = soup.find("div", {"class":"css-1999l0b-Box-Flex-StyledFlex e3iudi70"})
