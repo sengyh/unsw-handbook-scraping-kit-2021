@@ -10,7 +10,7 @@ from course_page_parser import create_course_json
 # TODO: file operations are cooked, come back later
 def traverse_dir():
   hc_path = Path.cwd() / '..' / 'data' / 'html' / 'courses'
-  tc_file = Path.cwd() / '..' / 'data' / 'json' / 'test_courses.json'
+  tc_file = Path.cwd() / '..' / 'data' / 'json' / 'all_courses.json'
   # if file doesnt exist, make file later and write into it
   if not os.path.exists(tc_file):
     tcf = open(tc_file, 'w')
@@ -20,11 +20,11 @@ def traverse_dir():
   tcf = open(tc_file, 'r')
   tcdict = json.load(tcf)
   tcf.close()
+  cont = False
   for root, dirs, files in os.walk(hc_path):
-    cont = False
     dirs.sort()
     for fi in sorted(files):
-      if (fi == 'LAWS3356.html' or cont is True):
+      if (fi == 'NANO1001.html' or cont is True):
         cont = True
         print(fi)
         f = open(os.path.join(root, fi), 'r')

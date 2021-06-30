@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait as Wait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from fake_useragent import UserAgent
+from scrape_faculty_page import scrape_fac_page
 import time
 import random
 
@@ -12,6 +13,7 @@ def faculty_scraper():
   driver.get('https://www.handbook.unsw.edu.au')
   # click into faculty section
   fac_button_xpath = "//li[@class='react-tabs__tab' and text()='By Faculty']"
+  Wait(driver, 10).until(EC.visibility_of_all_elements_located((By.XPATH,fac_button_xpath)))
   fac_button = driver.find_element_by_xpath(fac_button_xpath)
   fac_button.click()
   # get all faculties and put names into list
@@ -22,19 +24,19 @@ def faculty_scraper():
   fac_list = []
   for fac_e in fac_elems:
     fac_list.append(fac_e.text)
-  print(fac_list)
+  
+  # ['DVC (Academic) Board of Studies', 'Faculty of Arts, Design and Architecture', 'Faculty of Engineering', 'Faculty of Law and Justice', 'Faculty of Medicine and Health', 'Faculty of Science', 'UNSW Business School', 'UNSW Canberra at ADFA', 'UNSW Global']
   for fac in fac_list:
     Wait(driver, 10).until(EC.visibility_of_all_elements_located((By.XPATH,fac_list_xpath)))
     fac_xpath = fac_elem_xpath + "[text()='" + fac + "']"
     fac_div = driver.find_element_by_xpath(fac_xpath)
     time.sleep(2)
     driver.execute_script("arguments[0].click();", fac_div)
-    time.sleep(5)
-    driver.back()
+    # inside faculty page, do some more scraping...
+    scrape_fac_page(driver)
     time.sleep(2)
     fac_button = driver.find_element_by_xpath(fac_button_xpath)
     fac_button.click()
-    print(fac_xpath)
 
 
 
