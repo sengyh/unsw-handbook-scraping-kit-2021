@@ -6,8 +6,16 @@ import random
 
 def scrape_fac_page(driver):
   # //div[@class='e5gsavw0 css-1nc6plk-StyledLinkGroup-LinkGroup-css exq3dcx7']
+  faculty_data_dict = {}
+
   full_body_xpath = "//div[@class='css-kew50s el3esdr0']"
   Wait(driver, 15).until(EC.visibility_of_element_located((By.XPATH, full_body_xpath)))
+
+  # get faculty name and description
+  fac_header_dict = scrape_fp_header(driver)
+  faculty_data_dict.update(fac_header_dict)
+  time.sleep(1)
+
   full_sec_xpath = "//div[@class='browse-tab-content']"
   fps_list = driver.find_elements_by_xpath(full_sec_xpath)
   
@@ -15,13 +23,26 @@ def scrape_fac_page(driver):
   fps_names = driver.find_elements_by_xpath(full_sec_xpath + '//h3')
   for fps_name in fps_names:
     fpsname_list.append(fps_name.text)
-  print(fpsname_list)
+  #print(fpsname_list)
 
-  traverse_fpage_sections(fps_list, driver)
+  fac_body_dict = traverse_fpage_sections(fps_list, driver)
+  faculty_data_dict.update(fac_body_dict)
+  print(faculty_data_dict)
 
   time.sleep(5)
   driver.back()
-  return
+  return faculty_data_dict
+
+def scrape_fp_header(driver):
+  header_xpath = "//div[@class='css-1uws9aw-Box']"
+  header = driver.find_element_by_xpath(header_xpath)
+  fac_name = header.find_element_by_xpath(".//h2").text
+  #print(fac_name)
+  fac_desc = header.find_element_by_xpath(".//p").text
+  #print(fac_desc)
+  fac_header_dict = {'name': fac_name, 'overview': fac_desc}
+  #print(fac_header_dict)
+  return fac_header_dict
 
     # use './/' for relative search from particular element
   #['Programs', 'Double Degrees', 'Specialisations']
@@ -41,11 +62,11 @@ def traverse_fpage_sections(fps_list, driver):
       fps_dict = {page_section: fps_elems}
     #print(fps_dict)
     fac_page_dict.update(fps_dict)
-  print(fac_page_dict)
+  #print(fac_page_dict)
   return fac_page_dict
 
 def get_all_specialisation_types(fps, driver):
-  print('currently in major section...')
+  #print('currently in major section...')
   major_elems = get_all_elements_inside_section(fps, driver)
   #print(major_elems)
   spec_dict = {'Major': major_elems}
