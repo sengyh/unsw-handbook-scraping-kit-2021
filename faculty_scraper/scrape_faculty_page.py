@@ -23,36 +23,66 @@ def scrape_fac_page(driver):
   driver.back()
   return
 
+    # use './/' for relative search from particular element
+  #['Programs', 'Double Degrees', 'Specialisations']
 def traverse_fpage_sections(fps_list, driver):
-  ps_body_xpath = "//div[@class='e5gsavw0 css-1nc6plk-StyledLinkGroup-LinkGroup-css exq3dcx7']"
-  print(len(fps_list))
+  fac_page_dict = {}
   for fps in fps_list:
+    fps_dict = None
     page_section = fps.find_element_by_tag_name('h3').text
     if (page_section == 'Courses'):
       continue
     print(page_section)
-    # use './/' for relative search from particular element
-    get_all_elements_inside_section(fps, driver)
+    if (page_section == 'Specialisations'):
+      spec_dict = get_all_specialisation_types(fps, driver)
+      fps_dict = {page_section: spec_dict}
+    else:
+      fps_elems = get_all_elements_inside_section(fps, driver)
+      fps_dict = {page_section: fps_elems}
+    #print(fps_dict)
+    fac_page_dict.update(fps_dict)
+  print(fac_page_dict)
+  return fac_page_dict
 
+def get_all_specialisation_types(fps, driver):
+  print('currently in major section...')
+  major_elems = get_all_elements_inside_section(fps, driver)
+  #print(major_elems)
+  spec_dict = {'Major': major_elems}
+
+  minor_button_xpath = ".//span[@class='eruw9rv2 css-5tf4o9-Pill-Badge-css-SFilterBadge etsewye0' and text()='Minor']"
+  minor_button = fps.find_element_by_xpath(minor_button_xpath)
+  driver.execute_script("arguments[0].click();", minor_button)
+  time.sleep(5)
+  minor_elems = get_all_elements_inside_section(fps, driver)
+  #print(minor_elems)
+  spec_dict.update({'Minor': minor_elems})
+  
+  honours_button_xpath = ".//span[@class='eruw9rv2 css-5tf4o9-Pill-Badge-css-SFilterBadge etsewye0' and text()='Honours']"
+  honours_button = fps.find_element_by_xpath(honours_button_xpath)
+  driver.execute_script("arguments[0].click();", honours_button)
+  time.sleep(5)
+  honours_elems = get_all_elements_inside_section(fps, driver)
+  #print(honours_elems)
+  spec_dict.update({'Honours': honours_elems})
+  #print(fps_dict)
+  return spec_dict
 
   
 def get_all_elements_inside_section(fps, driver):
-  # check if there is page next button and is not disabled
-  # check if the 10-list elements exist
-  # check if there are singular prog 'boxes'
-
   next_ten_button_xpath = ".//button[@id='pagination-page-next']"
   next_button_exists = fps.find_elements_by_xpath(next_ten_button_xpath)
+  all_elements = []
   if not next_button_exists:
-    print("only one subpage")
-    traverse_ten_list(fps)
+    #print("only one subpage")
+    all_elements += traverse_ten_list(fps)
+    time.sleep(5)
   else:
-    print('pagination exists')
+    #print('pagination exists')
     next_button = fps.find_element_by_xpath(next_ten_button_xpath)
     next_page = True
-    all_section_codes = []
     while next_page:
-      all_section_codes.append(traverse_ten_list(fps))
+      all_elements += traverse_ten_list(fps)
       next_button = fps.find_element_by_xpath(next_ten_button_xpath)   
       button_is_clickable = next_button.is_enabled()
       if not button_is_clickable:
@@ -60,19 +90,8 @@ def get_all_elements_inside_section(fps, driver):
       else:
         driver.execute_script("arguments[0].click();", next_button)
         time.sleep(5)
-      
-
-
-
-
-
-
-
-
-  nav_footer_xpath = ".//div[@class='PaginationFooter css-4onoth-SPaginatorFooter-css eruw9rv3']"
-
-  return
-    
+  #print(all_elements)
+  return all_elements
 
 def traverse_ten_list(fps):
   ten_element_block_xpath = ".//div[@class='css-1161ecq-StyledAILinkHeaderSection exq3dcx4']"
@@ -82,7 +101,7 @@ def traverse_ten_list(fps):
     ten_codes = traverse_blocks(fps)
   else:
     for el in ten_element_list:
-      print(el.text)
+      #print(el.text)
       ten_codes.append(el.text)
   return ten_codes
 
@@ -91,7 +110,7 @@ def traverse_blocks(fps):
   ten_less_codes = []
   tenless_element_list = fps.find_elements_by_xpath(single_block_xpath)
   for el in tenless_element_list:
-    print(el.text)
+    #print(el.text)
     ten_less_codes.append(el.text)
   return ten_less_codes
 
