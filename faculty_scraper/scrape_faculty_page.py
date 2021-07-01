@@ -27,7 +27,7 @@ def scrape_fac_page(driver):
 
   fac_body_dict = traverse_fpage_sections(fps_list, driver)
   faculty_data_dict.update(fac_body_dict)
-  print(faculty_data_dict)
+  #print(faculty_data_dict)
 
   time.sleep(5)
   driver.back()
@@ -48,12 +48,13 @@ def scrape_fp_header(driver):
   #['Programs', 'Double Degrees', 'Specialisations']
 def traverse_fpage_sections(fps_list, driver):
   fac_page_dict = {}
+  page_section_list = ['Programs', 'Double Degrees', 'Specialisations']
   for fps in fps_list:
     fps_dict = None
     page_section = fps.find_element_by_tag_name('h3').text
     if (page_section == 'Courses'):
       continue
-    print(page_section)
+    #print(page_section)
     if (page_section == 'Specialisations'):
       spec_dict = get_all_specialisation_types(fps, driver)
       fps_dict = {page_section: spec_dict}
@@ -72,12 +73,17 @@ def get_all_specialisation_types(fps, driver):
   spec_dict = {'Major': major_elems}
 
   minor_button_xpath = ".//span[@class='eruw9rv2 css-5tf4o9-Pill-Badge-css-SFilterBadge etsewye0' and text()='Minor']"
-  minor_button = fps.find_element_by_xpath(minor_button_xpath)
-  driver.execute_script("arguments[0].click();", minor_button)
-  time.sleep(5)
-  minor_elems = get_all_elements_inside_section(fps, driver)
-  #print(minor_elems)
-  spec_dict.update({'Minor': minor_elems})
+  minor_exists = fps.find_elements_by_xpath(minor_button_xpath)
+  if minor_exists:
+    minor_button = fps.find_element_by_xpath(minor_button_xpath)
+    driver.execute_script("arguments[0].click();", minor_button)
+    time.sleep(5)
+    minor_elems = get_all_elements_inside_section(fps, driver)
+    #print(minor_elems)
+    spec_dict.update({'Minor': minor_elems})
+  else: 
+    spec_dict.update({'Minor': []})
+    print('fuck you canberra\n')
   
   honours_button_xpath = ".//span[@class='eruw9rv2 css-5tf4o9-Pill-Badge-css-SFilterBadge etsewye0' and text()='Honours']"
   honours_button = fps.find_element_by_xpath(honours_button_xpath)
