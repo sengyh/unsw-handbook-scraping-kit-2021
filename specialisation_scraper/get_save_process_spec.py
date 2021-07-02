@@ -1,3 +1,5 @@
+from get_spec_json import parse_spec_soup
+from process_soup_to_json import parse_spec_soup
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait as Wait
@@ -12,12 +14,10 @@ import os
 
 def process_spec(spec):
   spec_page_html = get_spec_page_html(spec)
-  #print(spec_page_html)
-  #print(fsp_html)
+  save_spec_page_html(spec_page_html)
   soup = bs4.BeautifulSoup(spec_page_html, "lxml")
-  save_spec_page_html(soup)
+  parse_spec_soup(soup)
   #print(soup.prettify())
-  print(soup)
   return
 
 def get_spec_page_html(spec):
@@ -45,8 +45,7 @@ def get_spec_page_html(spec):
 def save_spec_page_html(spec_soup):
   return
 
-def parse_spec_soup(soup):
-  return
+
 
 
 def setup_driver():
