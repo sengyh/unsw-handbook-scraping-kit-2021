@@ -12,10 +12,10 @@ def spec_scraper():
       #print(spec)
   random.shuffle(all_specs)
   # TODO: migrate to test file
-  jumbled_specs = all_specs
-  print(jumbled_specs)
-  sorted_list = sorted(jumbled_specs, key=lambda x: (x[-1], x[0]))
-  print(sorted_list)
+  #jumbled_specs = all_specs
+  #print(jumbled_specs)
+  #sorted_list = sorted(jumbled_specs, key=lambda x: (x[-1], x[0]))
+  #print(sorted_list)
   
 
   return
@@ -29,14 +29,15 @@ def get_all_specs():
     fac_data = json.load(facf)
     #print(type(fac_data))
     for (fac_code, val) in fac_data.items():
-      if (fac_code == 'FAC_ENG'):
+      #if (fac_code == 'FAC_ENG'):
       #print(val.get('name'))
         spec_dict = val.get('Specialisations')
         if spec_dict:
           for (spec_type, spec_list) in spec_dict.items():
             for spec in spec_list:
               all_specs.append(spec)
-              process_spec(fac_code, spec)
+              if (spec == "NEURB1"):
+                process_spec(fac_code, spec)
               #print(spec)
   return all_specs
 

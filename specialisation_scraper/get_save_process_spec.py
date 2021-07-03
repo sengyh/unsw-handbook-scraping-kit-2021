@@ -1,22 +1,23 @@
-from get_spec_json import parse_spec_soup
-from process_soup_to_json import parse_spec_soup
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait as Wait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import bs4
+from process_soup_to_json import parse_spec_soup
 from fake_useragent import UserAgent
 import time
 import random
 from pathlib import Path
 import os
 
-def process_spec(spec):
+def process_spec(fac_code, spec):
   spec_page_html = get_spec_page_html(spec)
   save_spec_page_html(spec_page_html)
   soup = bs4.BeautifulSoup(spec_page_html, "lxml")
-  parse_spec_soup(soup)
+  #parse_spec_soup(soup)
+  print(soup)
+  #time.sleep(random.randint(7,12))
   #print(soup.prettify())
   return
 
@@ -30,11 +31,12 @@ def get_spec_page_html(spec):
   except:
     print('shit hit the fan, aborting...')
     return "SHTF"
+  time.sleep(8)
   all_expand_buttons_xpath = "//button[@class='css-180fdj3-CallToActionButton-css evc83j21']"
   all_expand_buttons = driver.find_elements_by_xpath(all_expand_buttons_xpath)
   for expand_button in all_expand_buttons:
     expand_button.click()
-    time.sleep(4)
+    time.sleep(3)
   full_spec_page_xpath = "//div[@class='css-1m79oji-SLayoutContainer el608uh1']"
   Wait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, full_spec_page_xpath)))
   full_spec_page = driver.find_element_by_xpath(full_spec_page_xpath)
