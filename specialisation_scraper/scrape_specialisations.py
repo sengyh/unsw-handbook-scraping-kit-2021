@@ -36,7 +36,7 @@ def get_all_specs():
           for (spec_type, spec_list) in spec_dict.items():
             for spec in spec_list:
               all_specs.append(spec)
-              if (spec == "NEURB1"):
+              if (spec == "BINFAH"):
                 process_spec(fac_code, spec)
               #print(spec)
   return all_specs

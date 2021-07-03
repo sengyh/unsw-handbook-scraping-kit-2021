@@ -31,7 +31,7 @@ def get_spec_page_html(spec):
   except:
     print('shit hit the fan, aborting...')
     return "SHTF"
-  time.sleep(8)
+  time.sleep(10)
   all_expand_buttons_xpath = "//button[@class='css-180fdj3-CallToActionButton-css evc83j21']"
   all_expand_buttons = driver.find_elements_by_xpath(all_expand_buttons_xpath)
   for expand_button in all_expand_buttons:
