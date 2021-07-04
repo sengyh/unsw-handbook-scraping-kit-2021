@@ -17,7 +17,7 @@ def parse_section(section):
   print(req_title)
   if header.small:
     req_uoc = header.small.text
-  print(req_uoc)
+    print(req_uoc)
 
   # start parsing body section
   full_body_class = 'css-10hsoix-SAccordionRegion e1450wuy11'
@@ -26,18 +26,25 @@ def parse_section(section):
   body_desc = full_body.find('div', {'class': body_desc_class})
   bdesc_text = ""
   if body_desc:
-    bdesc_text = body_desc.text
-  print(bdesc_text)
+    bdesc_list = body_desc.contents
+    #print(bdesc_list)
+    for bdl_elem in bdesc_list:
+      if str(bdl_elem) == "<br/>":
+        bdesc_text += '\n'
+        continue
+      bdesc_text += str(bdl_elem).lstrip().rstrip() + ' '
+  print(bdesc_text.rstrip('\n'))
 
-  collapsible_sect_class = 'AccordionItem css-1dfs90h-Box-CardBody e1q64pes0'
+
   # check if there are collapsible sections
+  collapsible_sect_class = 'AccordionItem css-1dfs90h-Box-CardBody e1q64pes0'
   collapsible_sects = full_body.find_all('div', {'class': collapsible_sect_class})
-  print(len(collapsible_sects))
+  #print(len(collapsible_sects))
   if collapsible_sects:
     for csect in collapsible_sects:
       csect_codes = get_course_codes_from_section(csect)
       if csect.strong.text == "One of the following:":
-        print('choose one')
+        #print('choose one')
         separator = " | "
         csect_codes = [separator.join(csect_codes)]
       print(csect_codes)
@@ -55,14 +62,8 @@ def parse_section(section):
   if list_display_sect:
     ldsect_codes = get_course_codes_from_section(section)
     print(ldsect_codes)
-      #print(csect.prettify())
-      #print('\nwoop\n')
-
-
 
   return
-
-  #   any_level_course_block_class = 'cs-item css-1sd39x-StyledLink-StyledAILink exq3dcx2'
 
 # finds all 'blocks' under every collapsible blue box
 def get_course_codes_from_section(section):
