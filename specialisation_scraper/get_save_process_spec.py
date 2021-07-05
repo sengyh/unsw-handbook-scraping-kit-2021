@@ -13,13 +13,13 @@ import os
 
 def process_spec(fac_code, spec):
   spec_page_html = get_spec_page_html(spec)
-  save_spec_page_html(spec_page_html)
+  if (spec_page_html == "SHTF"):
+    return "SHTF"
   soup = bs4.BeautifulSoup(spec_page_html, "lxml")
-  #parse_spec_soup(soup)
-  print(soup)
-  #time.sleep(random.randint(7,12))
-  #print(soup.prettify())
-  return
+  spec_dict = parse_spec_soup(soup)
+  save_spec_page_html(fac_code, spec, str(soup))
+  time.sleep(random.randint(7,12))
+  return spec_dict
 
 def get_spec_page_html(spec):
   spec_url = "https://www.handbook.unsw.edu.au/undergraduate/specialisations/2021/" + spec + "?year=2021"
@@ -31,7 +31,7 @@ def get_spec_page_html(spec):
   except:
     print('shit hit the fan, aborting...')
     return "SHTF"
-  #time.sleep(5)
+  time.sleep(3)
   all_expand_buttons_xpath = "//button[@class='css-180fdj3-CallToActionButton-css evc83j21']"
   all_expand_buttons = driver.find_elements_by_xpath(all_expand_buttons_xpath)
   for expand_button in all_expand_buttons:
@@ -43,14 +43,18 @@ def get_spec_page_html(spec):
   Wait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, full_spec_page_xpath)))
   full_spec_page = driver.find_element_by_xpath(full_spec_page_xpath)
   fsp_html = full_spec_page.get_attribute('outerHTML')
-  
+  driver.quit()
   return fsp_html
 
-def save_spec_page_html(spec_soup):
+def save_spec_page_html(fac_code, spec, spec_html):
+  spec_html_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'specialisations' / fac_code
+  if not spec_html_dir_path.exists():
+    os.makedirs(spec_html_dir_path, exist_ok=True)
+  spec_path = os.path.join(spec_html_dir_path, spec + '.html')
+  sf = open(spec_path, 'w')
+  sf.write(spec_html)
+  sf.close()
   return
-
-
-
 
 def setup_driver():
   OPTS = Options()

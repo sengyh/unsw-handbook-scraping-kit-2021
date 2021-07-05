@@ -1,6 +1,7 @@
 from typing import final
 import bs4
 import json
+import re
 from parse_spec_structure import parse_spec_structure
 
 def parse_spec_soup(soup):
@@ -12,19 +13,22 @@ def parse_spec_soup(soup):
   spec_val_dict = head_dict
   spec_val_dict.update(body_dict)
   spec_dict = {code: spec_val_dict}
-  print(json.dumps(spec_dict, indent=2))
-  return
+  #print(json.dumps(spec_dict, indent=2))
+  return spec_dict
 
 def parse_head(head):
   head_dict = {}
   name = head.find('h2').text
   bottom_row = head.find_all('h5')
   code = bottom_row[0].text
-  uoc = bottom_row[1].text
-  print(code, name, uoc)
+  uoc = bottom_row[1].text.lstrip().rstrip()
+  processed_uoc = ""
+  if re.match("[0-9]+ Units of Credit", uoc):
+    processed_uoc = uoc.split(' ')[0]
+  #print(code, name, uoc)
   head_dict.update({'code': code})
   head_dict.update({'name': name})
-  head_dict.update({'uoc': uoc})
+  head_dict.update({'uoc': processed_uoc})
   #print(json.dumps(head_dict, indent=2))
   return head_dict
 
@@ -68,13 +72,14 @@ def parse_overview(overview):
 def parse_offered_progs(offered_programs):
   offered_prog_codes = []
   prog_row_elem_class = 'css-j3xo3o-Box-SAccordionItemHeader-SClickableAccordionItemHeader el7mbl40'
-  all_prog_elems = offered_programs.find_all('div', {'class', prog_row_elem_class})
-  for prog_elem in all_prog_elems:
-    deg_fname_and_code = prog_elem.find_all('strong')
-    deg_fname = deg_fname_and_code[0].text
-    deg_code = deg_fname_and_code[1].text.split(' - ')[0]
-    offered_prog_codes.append(deg_code)
-    #print(deg_code + ': ' + deg_fname)
+  if offered_programs:
+    all_prog_elems = offered_programs.find_all('div', {'class', prog_row_elem_class})
+    for prog_elem in all_prog_elems:
+      deg_fname_and_code = prog_elem.find_all('strong')
+      deg_fname = deg_fname_and_code[0].text
+      deg_code = deg_fname_and_code[1].text.split(' - ')[0]
+      offered_prog_codes.append(deg_code)
+      #print(deg_code + ': ' + deg_fname)
   offeredp_dict = {'available_in_programs': offered_prog_codes}
   #print(offeredp_dict)
   return offeredp_dict

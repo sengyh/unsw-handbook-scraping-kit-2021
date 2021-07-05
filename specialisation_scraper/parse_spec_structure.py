@@ -47,7 +47,7 @@ def parse_section(section):
         bdesc_text += '\n'
         continue
       bdesc_text += str(bdl_elem).lstrip().rstrip() + ' '
-  bdesc_text = bdesc_text.rstrip('\n')
+  bdesc_text = bdesc_text.rstrip()
   #print(bdesc_text)
   bdesc_dict = {'description': bdesc_text}
   sect_val_dict.update(bdesc_dict)

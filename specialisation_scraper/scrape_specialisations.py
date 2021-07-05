@@ -2,24 +2,48 @@ import json
 from pathlib import Path
 from get_save_process_spec import process_spec
 import random
+import os
 
 def spec_scraper():
-  all_specs = get_all_specs()
-  #for spec in all_specs:
-  #  if (spec == 'SOLAAH'):
-  #    process_spec(spec)
-  #    break
-      #print(spec)
-  random.shuffle(all_specs)
-  # TODO: migrate to test file
-  #jumbled_specs = all_specs
-  #print(jumbled_specs)
-  #sorted_list = sorted(jumbled_specs, key=lambda x: (x[-1], x[0]))
-  #print(sorted_list)
-  
+  spec_file = Path.cwd() / '..' / 'data' / 'json' / 'all_specialisations.json'
+  if not os.path.exists(spec_file):
+    sf = open(spec_file, 'w')
+    sf.write("{}")
+    sf.close()
+  sf = open(spec_file, 'r')
+  all_specs_dict = json.load(sf)
+  sf.close()
 
+  fac_file = Path.cwd() / '..' / 'data' / 'json' / 'all_faculties.json'
+  with open(fac_file, 'r') as facf:
+    fac_data = json.load(facf)
+    start = False
+    for (fac_code, val) in fac_data.items():
+      print(fac_code)
+      spec_dict = val.get('Specialisations')
+      if spec_dict:
+        for (spec_type, spec_list) in spec_dict.items():
+          print(spec_type)
+          for spec in spec_list:
+            if (spec == "ATSID2" or start is True):
+              start = True
+              spec_dict = process_spec(fac_code, spec)
+              if (spec_dict == "SHTF"):
+                print('exiting early')
+                start = False
+                break
+            all_specs_dict.update(spec_dict)
+            print(spec)
+  facf.close()
+
+  open(spec_file, 'w').close()
+  sf = open(spec_file, 'w')
+  json.dump(all_specs_dict, sf)
+  sf.close()
+  print('fuck yesssssss')
   return
 
+  #sorted_list = sorted(jumbled_specs, key=lambda x: (x[-1], x[0]))
 def get_all_specs():
   all_specs = []
   # access all specialities inside faculty json 
