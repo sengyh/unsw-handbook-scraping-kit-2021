@@ -1,23 +1,37 @@
+import re
+import json
+
 def parse_spec_structure(spec_structure):
+  structure_val_dict = {}
   section_box_class = 'css-8x1vkg-Box-Card-EmptyCard-css-SAccordionContainer e1450wuy4'
   spec_struct_sects = spec_structure.find_all('div', {'class': section_box_class})
-  print('number of sections: ' + str(len(spec_struct_sects)))
+  #print('number of sections: ' + str(len(spec_struct_sects)))
   for section in spec_struct_sects:
-    parse_section(section) 
-    print('\n\n')
-  return
+    section_dict = parse_section(section) 
+    structure_val_dict.update(section_dict)
+    #print('\n\n')
+  structure_dict = {'structure': structure_val_dict}
+  #print(json.dumps(structure_dict, indent=2))
+  return structure_dict
 
 # inside the 'blue box'
 def parse_section(section):
+  sect_val_dict = {}
+
   # obtains requirement section title and uocs from section header
   header_class = 'css-1wt42lu-Box-Flex-SAccordionHeader-css e1450wuy5'
   header = section.find('div', {'class': header_class})
-  req_title = header.strong.text
-  req_uoc = ""
-  print(req_title)
+  sec_title = header.strong.text
+  sec_uoc = ""
+  #print(sec_title)
   if header.small:
-    req_uoc = header.small.text
-    print(req_uoc)
+    sec_desc = header.small.text.lstrip().rstrip()
+    confirmed_uoc_line = re.search("[0-9]+ Units of Credit:$", sec_desc)
+    if confirmed_uoc_line:
+      sec_uoc = confirmed_uoc_line.string.split(' ')[0]
+  #print(sec_uoc)
+  uoc_dict = {'uoc': sec_uoc}
+  sect_val_dict.update(uoc_dict)
 
   # start parsing body section
   full_body_class = 'css-10hsoix-SAccordionRegion e1450wuy11'
@@ -33,37 +47,51 @@ def parse_section(section):
         bdesc_text += '\n'
         continue
       bdesc_text += str(bdl_elem).lstrip().rstrip() + ' '
-  print(bdesc_text.rstrip('\n'))
+  bdesc_text = bdesc_text.rstrip('\n')
+  #print(bdesc_text)
+  bdesc_dict = {'description': bdesc_text}
+  sect_val_dict.update(bdesc_dict)
 
+  # stores all codes from section
+  section_codes = []
 
   # check if there are collapsible sections
   collapsible_sect_class = 'AccordionItem css-1dfs90h-Box-CardBody e1q64pes0'
   collapsible_sects = full_body.find_all('div', {'class': collapsible_sect_class})
-  #print(len(collapsible_sects))
   if collapsible_sects:
     for csect in collapsible_sects:
       csect_codes = get_course_codes_from_section(csect)
       if csect.strong.text == "One of the following:":
-        #print('choose one')
         separator = " | "
         csect_codes = [separator.join(csect_codes)]
-      print(csect_codes)
+      #print(csect_codes)
+      section_codes += csect_codes
+  
   
   # no collapsibles, just one body section in the 'blue box'
   no_collapsible_sect_class = 'css-tne7gz-StyledLinkGroup exq3dcx7'
   no_collapsible_sect = full_body.find('div', {'class': no_collapsible_sect_class})
   if no_collapsible_sect:
     ncsect_codes = get_course_codes_from_section(no_collapsible_sect)
-    print(ncsect_codes)
+    #print(ncsect_codes)
+    section_codes += ncsect_codes
 
   # one body, but in list instead of block form
   list_display_sect_class = 'css-liz132-StyledLinkGroup exq3dcx7'
   list_display_sect = full_body.find('div', {'class': list_display_sect_class})
   if list_display_sect:
     ldsect_codes = get_course_codes_from_section(section)
-    print(ldsect_codes)
+    #print(ldsect_codes)
+    section_codes += ldsect_codes
+  
+  #print(section_codes)
+  sec_code_dict = {'courses': section_codes}
+  sect_val_dict.update(sec_code_dict)
+  
+  sect_dict = {sec_title: sect_val_dict}
+  #print(json.dumps(sect_dict, indent=2))
 
-  return
+  return sect_dict
 
 # finds all 'blocks' under every collapsible blue box
 def get_course_codes_from_section(section):
