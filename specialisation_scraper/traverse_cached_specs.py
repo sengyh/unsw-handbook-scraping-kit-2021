@@ -7,9 +7,9 @@ import os
 import sys
 import json
 
-def traverse_dir():
+def traverse_cached_specs():
   spec_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'specialisations'
-  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'test_ordered_specs.json'
+  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'new_ordered_specs.json'
 
   if not os.path.exists(ts_file):
     tsf = open(ts_file, 'w')
@@ -24,7 +24,7 @@ def traverse_dir():
     for directory in dirs:
       print(directory)
     for fi in sorted(files, key=lambda x: (x[5], x[0])):
-      if (fi == 'COMPA1' or cont is True):
+      if (fi == 'BINFB1.html' or cont is True):
         cont = True
         print(fi)
         f = open(os.path.join(root, fi), 'r')
@@ -42,10 +42,11 @@ def traverse_dir():
 def test():
   spec = 'filmb'
   if (len(sys.argv) == 2):
-    spec = sys.argv[1]
+    spec = sys.argv[1].upper()
 
+  fac = 'UNSW_CANB' # 'FAC_ENG' 'BSN_SCH'
   spec_file = spec + '.html'
-  raw_spec_html = Path.cwd() / 'htmls' / spec_file
+  raw_spec_html = Path.cwd() / '..' / 'data' / 'html' / 'specialisations' / fac / spec_file
   rshf = open(raw_spec_html, 'r')
   soup = bs4.BeautifulSoup(rshf, "lxml")
   spec_dict = parse_spec_soup(soup)
@@ -56,4 +57,4 @@ def test():
 
 if __name__ == '__main__':
   #test()
-  traverse_dir()
+  traverse_cached_specs()

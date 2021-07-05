@@ -14,18 +14,18 @@ def spec_scraper():
   all_specs_dict = json.load(sf)
   sf.close()
 
-  fac_file = Path.cwd() / '..' / 'data' / 'json' / 'all_faculties.json'
+  fac_file = Path.cwd() / '..' / 'data' / 'json' / 'faculties.json'
   with open(fac_file, 'r') as facf:
     fac_data = json.load(facf)
-    start = False
+    start = True
     for (fac_code, val) in fac_data.items():
       print(fac_code)
       spec_dict = val.get('Specialisations')
       if spec_dict:
         for (spec_type, spec_list) in spec_dict.items():
-          print(spec_type)
+          print('\t' + spec_type)
           for spec in spec_list:
-            if (spec == "ASIAB2" or start is True):
+            if (spec == "ZPEMO1" or start is True):
               if start is False:
                 print('resuming here...')
               start = True
@@ -35,7 +35,7 @@ def spec_scraper():
                 start = False
                 break
               all_specs_dict.update(spec_json)
-            print(spec)
+            print('\t\t' + spec)
   facf.close()
 
   open(spec_file, 'w').close()
@@ -43,6 +43,7 @@ def spec_scraper():
   json.dump(all_specs_dict, sf)
   sf.close()
   print('fuck yesssssss')
+  print(len(get_all_specs()))
   return
 
   #sorted_list = sorted(jumbled_specs, key=lambda x: (x[-1], x[0]))
@@ -50,7 +51,7 @@ def get_all_specs():
   all_specs = []
   # access all specialities inside faculty json 
   # FAC_ADA, FAC_ENG, FAC_LAW, FAC_MED, FAC_SCI
-  fac_file = Path.cwd() / '..' / 'data' / 'json' / 'all_faculties.json'
+  fac_file = Path.cwd() / '..' / 'data' / 'json' / 'faculties.json'
   with open(fac_file, 'r') as facf:
     fac_data = json.load(facf)
     #print(type(fac_data))
@@ -62,8 +63,8 @@ def get_all_specs():
           for (spec_type, spec_list) in spec_dict.items():
             for spec in spec_list:
               all_specs.append(spec)
-              if (spec == "COMPAH"):
-                process_spec(fac_code, spec)
+              #if (spec == "COMPAH"):
+              #  process_spec(fac_code, spec)
               #print(spec)
   return all_specs
 

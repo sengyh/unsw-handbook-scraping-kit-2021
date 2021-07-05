@@ -58,6 +58,8 @@ def parse_body(body):
 
 # helper functions
 def parse_overview(overview):
+  if not overview:
+    return ""
   overview_body_class = 'css-1x8hb4i-Box-CardBody e1q64pes0'
   ovrbody = overview.find('div', {'class': overview_body_class})
   overview_text = ovrbody.find('div', {'aria-hidden': 'false'})

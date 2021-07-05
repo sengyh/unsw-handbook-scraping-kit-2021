@@ -2,6 +2,8 @@ import re
 import json
 
 def parse_spec_structure(spec_structure):
+  if not spec_structure:
+    return {'structure': {}}
   structure_val_dict = {}
   section_box_class = 'css-8x1vkg-Box-Card-EmptyCard-css-SAccordionContainer e1450wuy4'
   spec_struct_sects = spec_structure.find_all('div', {'class': section_box_class})
@@ -60,11 +62,19 @@ def parse_section(section):
   collapsible_sects = full_body.find_all('div', {'class': collapsible_sect_class})
   if collapsible_sects:
     for csect in collapsible_sects:
+      #print(csect.text)
       csect_codes = get_course_codes_from_section(csect)
+      if not csect.strong:
+        continue
       if csect.strong.text == "One of the following:":
         separator = " | "
         csect_codes = [separator.join(csect_codes)]
+      if csect.strong.text.split(' ')[0] == 'List':
+        # spec that has this so far: ECONF1
+        print('fucking list edge case')
+        csect_codes += ['End of ' + csect.strong.text]
       #print(csect_codes)
+      
       section_codes += csect_codes
   
   
