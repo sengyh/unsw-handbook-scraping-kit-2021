@@ -62,7 +62,7 @@ def setup_driver():
   user_agent = ua.random
   OPTS.add_argument(f'user-agent={user_agent}')
   OPTS.add_argument("--window-size=1920,1080")
-  #OPTS.add_argument("--headless")
+  OPTS.add_argument("--headless")
   DRIVER_PATH = '../chromedriver'
   driver = Chrome(options=OPTS, executable_path=DRIVER_PATH)
   return driver

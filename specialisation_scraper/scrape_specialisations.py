@@ -25,14 +25,16 @@ def spec_scraper():
         for (spec_type, spec_list) in spec_dict.items():
           print(spec_type)
           for spec in spec_list:
-            if (spec == "ATSID2" or start is True):
+            if (spec == "ASIAB2" or start is True):
+              if start is False:
+                print('resuming here...')
               start = True
-              spec_dict = process_spec(fac_code, spec)
-              if (spec_dict == "SHTF"):
+              spec_json = process_spec(fac_code, spec)
+              if (spec_json == "SHTF"):
                 print('exiting early')
                 start = False
                 break
-            all_specs_dict.update(spec_dict)
+              all_specs_dict.update(spec_json)
             print(spec)
   facf.close()
 

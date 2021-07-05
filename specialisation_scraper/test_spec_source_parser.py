@@ -9,7 +9,7 @@ import json
 
 def traverse_dir():
   spec_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'specialisations'
-  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'test_specs.json'
+  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'test_ordered_specs.json'
 
   if not os.path.exists(ts_file):
     tsf = open(ts_file, 'w')
@@ -21,6 +21,8 @@ def traverse_dir():
   tsf.close()
   cont = True
   for root, dirs, files in os.walk(spec_dir_path):
+    for directory in dirs:
+      print(directory)
     for fi in sorted(files, key=lambda x: (x[5], x[0])):
       if (fi == 'COMPA1' or cont is True):
         cont = True
