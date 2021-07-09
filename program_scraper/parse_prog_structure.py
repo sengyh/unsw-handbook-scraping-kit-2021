@@ -75,7 +75,27 @@ def parse_section(section):
       csect_count +=1
       # get header, subheader, contents and courses/specs from collapsible section
       csect_dict = process_csect(csect)
-      csects_dict.update(csect_dict)
+      # if csect header is 'one of the following:'
+      # gets the object inside csects_dict and appends to the course list
+      if type(csect_dict) == str:
+        if not csects_dict:
+          c_list = []
+          if csect_dict != "":
+            c_list.append(csect_dict)
+          csects_dict.update({'courses': c_list})
+        else:
+          for k,v in csects_dict.items():
+            csect_obj = v
+            # if there are no existing objects in csects_dict
+            if type(csect_obj) == list:
+              csect_obj.append(csect_dict)
+            else:
+              c_list = csect_obj.pop('courses')
+              if c_list:
+                c_list.append(csect_dict)
+                csect_obj.update({'courses': c_list})
+      else:
+        csects_dict.update(csect_dict)
     # since collapsibles are all already processed, compile sect_dict and return early
     sect_val_dict.update(csects_dict)
     sect_dict = {sec_title: sect_val_dict}
@@ -142,6 +162,13 @@ def process_csect(csect):
   desc_text = ""
   if body:
     desc_text = parse_csect_desc(body)
+    # TODO: what if collapsible has 'One of the following'?
+    if header_title.rstrip().rstrip(':') == 'One of the following':
+      #print('goddamn edge case')
+      one_of_list = get_course_codes_from_section(body)
+      separator = ' | '
+      one_of_str = separator.join(one_of_list)
+      return one_of_str    
 
   # check for collapsibles inside... the collapsible (jfc this is so cursed)
   collapsible_class = "AccordionItem css-1dfs90h-Box-CardBody e1q64pes0"

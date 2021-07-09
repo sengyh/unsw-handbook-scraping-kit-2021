@@ -11,13 +11,13 @@ def prog_scraper():
   facf = open(fac_file, 'r')
   fac_data = json.load(facf)
   facf.close()
-  start = True
+  start = False
   for (fac_code, val) in fac_data.items():
     print(fac_code)
     prog_list = val.get('Programs')
     if prog_list:
       for prog in prog_list:
-        if (prog == "3362" or start is True):
+        if (prog == "3635" or start is True):
           if start is False:
             print('resuming here...')
           start = True

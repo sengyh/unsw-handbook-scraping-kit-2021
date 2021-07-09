@@ -9,7 +9,7 @@ import json
 
 def traverse_cached_progs():
   prog_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'programs'
-  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'new_ordered_progs.json'
+  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'tweaked_new_ordered_progs.json'
 
   if not os.path.exists(ts_file):
     tsf = open(ts_file, 'w')
@@ -23,7 +23,7 @@ def traverse_cached_progs():
   for root, dirs, files in os.walk(prog_dir_path):
     for directory in dirs:
       print(directory)
-    for fi in sorted(files, key=lambda x: (x[5], x[0])):
+    for fi in sorted(files): #, key=lambda x: (x[5], x[0])):
       if (fi == 'BINFB1.html' or cont is True):
         cont = True
         print(fi)
@@ -40,13 +40,13 @@ def traverse_cached_progs():
   return
 
 def test():
-  prog = 'comp_sci'
+  prog = '3635'
   if (len(sys.argv) == 2):
     prog = sys.argv[1].upper()
-  fac = 'BSN_SCH' # 'FAC_ENG' 
+  fac = 'FAC_ENG' # 'FAC_ENG' 
   prog_file = prog + '.html'
-  #raw_prog_html = Path.cwd() / '..' / 'data' / 'html' / 'programs' / fac / prog_file
-  raw_prog_html = Path.cwd() / 'htmls' / prog_file
+  raw_prog_html = Path.cwd() / '..' / 'data' / 'html' / 'programs' / fac / prog_file
+  #raw_prog_html = Path.cwd() / 'htmls' / prog_file
   rphf = open(raw_prog_html, 'r')
   soup = bs4.BeautifulSoup(rphf, "lxml")
   prog_dict = parse_prog_soup(soup)
@@ -54,5 +54,5 @@ def test():
   return
 
 if __name__ == '__main__':
-  test()
-  #traverse_cached_progs()
+  #test()
+  traverse_cached_progs()
