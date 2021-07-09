@@ -2,14 +2,14 @@ import bs4
 import time
 import random
 from pathlib import Path
-from process_soup_to_json import parse_spec_soup
+from process_soup_to_json import parse_prog_soup
 import os
 import sys
 import json
 
-def traverse_cached_specs():
-  spec_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'specialisations'
-  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'new_ordered_specs.json'
+def traverse_cached_progs():
+  prog_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'programs'
+  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'new_ordered_progs.json'
 
   if not os.path.exists(ts_file):
     tsf = open(ts_file, 'w')
@@ -20,7 +20,7 @@ def traverse_cached_specs():
   tsdict = json.load(tsf)
   tsf.close()
   cont = True
-  for root, dirs, files in os.walk(spec_dir_path):
+  for root, dirs, files in os.walk(prog_dir_path):
     for directory in dirs:
       print(directory)
     for fi in sorted(files, key=lambda x: (x[5], x[0])):
@@ -29,8 +29,8 @@ def traverse_cached_specs():
         print(fi)
         f = open(os.path.join(root, fi), 'r')
         soup = bs4.BeautifulSoup(f, 'lxml')
-        spec_dict = parse_spec_soup(soup)
-        tsdict.update(spec_dict)
+        prog_dict = parse_prog_soup(soup)
+        tsdict.update(prog_dict)
         f.close()
 
   open(ts_file, 'w').close()
@@ -45,16 +45,14 @@ def test():
     prog = sys.argv[1].upper()
   fac = 'BSN_SCH' # 'FAC_ENG' 
   prog_file = prog + '.html'
-  #raw_spec_html = Path.cwd() / '..' / 'data' / 'html' / 'specialisations' / fac / spec_file
-  raw_spec_html = Path.cwd() / 'htmls' / prog_file
-  rshf = open(raw_spec_html, 'r')
-  soup = bs4.BeautifulSoup(rshf, "lxml")
-  spec_dict = parse_spec_soup(soup)
-  print(json.dumps(spec_dict, indent=2))
+  #raw_prog_html = Path.cwd() / '..' / 'data' / 'html' / 'programs' / fac / prog_file
+  raw_prog_html = Path.cwd() / 'htmls' / prog_file
+  rphf = open(raw_prog_html, 'r')
+  soup = bs4.BeautifulSoup(rphf, "lxml")
+  prog_dict = parse_prog_soup(soup)
+  #print(json.dumps(prog_dict, indent=2))
   return
-
-
 
 if __name__ == '__main__':
   test()
-  #traverse_cached_specs()
+  #traverse_cached_progs()
