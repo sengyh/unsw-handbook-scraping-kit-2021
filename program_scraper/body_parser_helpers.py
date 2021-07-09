@@ -43,6 +43,8 @@ def process_sidebar(sidebar):
       content = elem.find('a')
       if not content:
         content = elem.find('div', {'class': 'css-1smylv8-Box-Flex'})
+      if not content or content.text == " ":
+        content = elem.find('div', {'class': 'css-1l0t84s-Box-CardBody e1q64pes0'})
       if content:
         title_text = title.find(text=True).lstrip().rstrip().lower().replace(' ', '_')
         content_text = content.find(text=True).lstrip().rstrip()

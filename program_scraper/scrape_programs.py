@@ -27,7 +27,7 @@ def prog_scraper():
             start = False
             break
           all_progs_dict.update(prog_json)
-        print('\t' + prog)
+        print('\n' + prog + '\n')
 
   dump_prog_dict(prog_file, all_progs_dict)
   return

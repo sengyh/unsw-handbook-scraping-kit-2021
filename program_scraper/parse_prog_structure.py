@@ -14,7 +14,7 @@ def parse_prog_structure(prog_structure):
   ps_desc = ""
   if prog_strucure_desc:
     ps_desc = parse_psdesc(prog_strucure_desc)
-  structure_val_dict.update({'requirements': ps_desc})
+  structure_val_dict.update({'overview': ps_desc})
   
   section_box_class = 'css-8x1vkg-Box-Card-EmptyCard-css-SAccordionContainer e1450wuy4'
   prog_struct_sects = prog_structure.find_all('div', {'class': section_box_class})
@@ -28,6 +28,7 @@ def parse_prog_structure(prog_structure):
 
 # inside the 'blue box'
 def parse_section(section):
+  sect_dict = {}
   sect_val_dict = {}
   # obtains requirement section title and uocs from section header
   header_class = 'css-1wt42lu-Box-Flex-SAccordionHeader-css e1450wuy5'
@@ -63,13 +64,11 @@ def parse_section(section):
   bdesc_dict = {'requirements': bdesc_text}
   sect_val_dict.update(bdesc_dict)
 
-  # stores all codes from section
-  section_codes = []
-
   # check if there are collapsible sections
   collapsible_sect_class = 'AccordionItem css-1dfs90h-Box-CardBody e1q64pes0'
   collapsible_sects = full_body.find_all('div', {'class': collapsible_sect_class}, recursive=False)
   csects_dict = {}
+  ncsects_dict = {}
   if collapsible_sects:
     csect_count = 0
     for csect in collapsible_sects:
@@ -80,32 +79,38 @@ def parse_section(section):
     # since collapsibles are all already processed, compile sect_dict and return early
     sect_val_dict.update(csects_dict)
     sect_dict = {sec_title: sect_val_dict}
-    #print(json.dumps(sect_dict, indent=2))
-    return sect_dict  
-  
-  # no collapsibles, just one body section in the 'blue box'
-  no_collapsible_sect_class = 'css-tne7gz-StyledLinkGroup exq3dcx7'
-  no_collapsible_sect = full_body.find('div', {'class': no_collapsible_sect_class})
-  if no_collapsible_sect:
-    ncsect_codes = get_course_codes_from_section(no_collapsible_sect)
-    #print(ncsect_codes)
-    section_codes += ncsect_codes
-
-  # one body, but in list instead of block form
-  list_display_sect_class = 'css-liz132-StyledLinkGroup exq3dcx7'
-  list_display_sect = full_body.find('div', {'class': list_display_sect_class})
-  if list_display_sect:
-    ldsect_codes = get_course_codes_from_section(section)
-    #print(ldsect_codes)
-    section_codes += ldsect_codes
-  
-  #print(section_codes)
-  sec_code_dict = {'courses': section_codes}
-  sect_val_dict.update(sec_code_dict)
-  
-  sect_dict = {sec_title: sect_val_dict}
+  else:
+    # no collapsibles, just one body section in the 'blue box'
+    no_collapsible_sect_class = 'css-tne7gz-StyledLinkGroup exq3dcx7'
+    no_collapsible_sect = full_body.find('div', {'class': no_collapsible_sect_class})
+    sect_body = None
+    if no_collapsible_sect:
+      sect_body = no_collapsible_sect
+    else:
+      # list instead of block form
+      list_display_sect_class = 'css-liz132-StyledLinkGroup exq3dcx7'
+      list_display_sect = full_body.find('div', {'class': list_display_sect_class})
+      if list_display_sect:
+        sect_body = list_display_sect
+    if sect_body:
+      button_bar_class = "css-1h5izuv-Box-Flex-FilterContainer-filters ebfvri70"
+      button_bar = sect_body.find('div', {'class': button_bar_class})
+      if button_bar:
+        ncsects_dict = button_bar_sect_parser(sect_body, button_bar, ncsects_dict)
+        sect_val_dict.update(ncsects_dict)
+      else:
+        # need to construct the dict as button_bar_set_parser isnt called
+        sec_code_list = get_course_codes_from_section(sect_body)
+        sect_code_dict = {'courses': sec_code_list}
+        sect_val_dict.update(sect_code_dict)
+    else:
+      #TODO: check whether this is appropriate, no idea what happens when body is null...
+      #print('no blocks or list shown in this section')
+      #print(sect_val_dict)
+      sect_code_dict = {'courses': []}
+      sect_val_dict.update(sect_code_dict)
+    sect_dict = {sec_title: sect_val_dict}
   #print(json.dumps(sect_dict, indent=2))
-
   return sect_dict
 
 # collapsibles inside the 'blue box'
@@ -114,7 +119,6 @@ def parse_section(section):
 # however, programs have a 'disciplinary structure' section that have discrete
 # entries which cannot be homogenised into one single list
 def process_csect(csect):
-  #print(csect.text)
   # course or spec list
   header_class = "css-1smylv8-Box-Flex"
   header = csect.find('div', {'class': header_class})
@@ -138,7 +142,6 @@ def process_csect(csect):
   desc_text = ""
   if body:
     desc_text = parse_csect_desc(body)
-  #print(desc_text)
 
   # check for collapsibles inside... the collapsible (jfc this is so cursed)
   collapsible_class = "AccordionItem css-1dfs90h-Box-CardBody e1q64pes0"
@@ -163,19 +166,7 @@ def process_csect(csect):
   list_key_name = "courses"
   spec_dict = {}
   if button_bar:
-    yellow_button_class = "undefined active css-18a30wi-Pill-Badge-css etsewye0"
-    grey_button_class = "undefined css-18a30wi-Pill-Badge-css etsewye0"
-    active_button = button_bar.find('button', {'class': yellow_button_class})
-    inactive_button = button_bar.find('button', {'class': grey_button_class})
-    if active_button:
-      list_key_name = active_button.text.lower()
-      if list_key_name in ['major', 'minor']:
-        list_key_name = list_key_name + 's'
-      list_val_list = get_course_codes_from_section(body)
-      spec_dict = {list_key_name: list_val_list}
-    if inactive_button:
-      list_key_name = inactive_button.text.lower() + 's'
-      spec_dict.update({list_key_name: []})
+    spec_dict = button_bar_sect_parser(body, button_bar, spec_dict)
   else:
     if collapsibles_exist:
       spec_dict = parse_ccollapsible(collapsibles, one_list_only)
@@ -267,3 +258,19 @@ def parse_psdesc(prog_strucure_desc):
   ps_desc = format_overview_text(prog_strucure_desc)
   ps_desc = re.sub('[\n]{3,}', '\n\n', ps_desc)
   return ps_desc
+
+def button_bar_sect_parser(body, button_bar, spec_dict):
+  yellow_button_class = "undefined active css-18a30wi-Pill-Badge-css etsewye0"
+  grey_button_class = "undefined css-18a30wi-Pill-Badge-css etsewye0"
+  active_button = button_bar.find('button', {'class': yellow_button_class})
+  inactive_button = button_bar.find('button', {'class': grey_button_class})
+  if active_button:
+    list_key_name = active_button.text.lower()
+    if list_key_name in ['major', 'minor']:
+      list_key_name = list_key_name + 's'
+    list_val_list = get_course_codes_from_section(body)
+    spec_dict = {list_key_name: list_val_list}
+  if inactive_button:
+    list_key_name = inactive_button.text.lower() + 's'
+    spec_dict.update({list_key_name: []})
+  return spec_dict
