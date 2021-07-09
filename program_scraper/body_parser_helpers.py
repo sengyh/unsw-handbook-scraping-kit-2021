@@ -22,7 +22,6 @@ def parse_associated_progs(associated_progs):
   if associated_progs:
     rdd_section = associated_progs.find('div', {'id': 'RelatedDoubleDegree'})
     if rdd_section:
-      print('rdd sec found')
       all_prog_elems = rdd_section.find_all('div', {'class', prog_row_elem_class})
       for prog_elem in all_prog_elems:
         deg_fname_and_code = prog_elem.find_all('strong')

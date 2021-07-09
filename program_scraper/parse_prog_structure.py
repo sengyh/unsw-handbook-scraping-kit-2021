@@ -1,17 +1,27 @@
 import re
 import json
+from body_parser_helpers import format_overview_text
+
 
 def parse_prog_structure(prog_structure):
   if not prog_structure:
     return {'structure': {}}
+
   structure_val_dict = {}
+  # addition: get the content/description of program structure
+  prog_struct_desc_class = "css-1l0t84s-Box-CardBody e1q64pes0"
+  prog_strucure_desc = prog_structure.find('div', {'class': prog_struct_desc_class})
+  ps_desc = ""
+  if prog_strucure_desc:
+    ps_desc = parse_psdesc(prog_strucure_desc)
+  structure_val_dict.update({'requirements': ps_desc})
+  
   section_box_class = 'css-8x1vkg-Box-Card-EmptyCard-css-SAccordionContainer e1450wuy4'
   prog_struct_sects = prog_structure.find_all('div', {'class': section_box_class})
-  #print('number of sections: ' + str(len(prog_struct_sects)))
   for section in prog_struct_sects:
     section_dict = parse_section(section) 
     structure_val_dict.update(section_dict)
-    #print('\n\n')
+
   structure_dict = {'structure': structure_val_dict}
   #print(json.dumps(structure_dict, indent=2))
   return structure_dict
@@ -19,7 +29,6 @@ def parse_prog_structure(prog_structure):
 # inside the 'blue box'
 def parse_section(section):
   sect_val_dict = {}
-
   # obtains requirement section title and uocs from section header
   header_class = 'css-1wt42lu-Box-Flex-SAccordionHeader-css e1450wuy5'
   header = section.find('div', {'class': header_class})
@@ -51,7 +60,7 @@ def parse_section(section):
       bdesc_text += str(bdl_elem).lstrip().rstrip() + ' '
   bdesc_text = bdesc_text.rstrip()
   #print(bdesc_text)
-  bdesc_dict = {'description': bdesc_text}
+  bdesc_dict = {'requirements': bdesc_text}
   sect_val_dict.update(bdesc_dict)
 
   # stores all codes from section
@@ -60,24 +69,19 @@ def parse_section(section):
   # check if there are collapsible sections
   collapsible_sect_class = 'AccordionItem css-1dfs90h-Box-CardBody e1q64pes0'
   collapsible_sects = full_body.find_all('div', {'class': collapsible_sect_class}, recursive=False)
+  csects_dict = {}
   if collapsible_sects:
     csect_count = 0
     for csect in collapsible_sects:
       csect_count +=1
-      # get header, subheader and desc from collapsible section
+      # get header, subheader, contents and courses/specs from collapsible section
       csect_dict = process_csect(csect)
-      #print(csect.text)
-      csect_codes = get_course_codes_from_section(csect)
-      if not csect.strong:
-        continue
-      if csect.strong.text == "One of the following:":
-        separator = " | "
-        csect_codes = [separator.join(csect_codes)]
-      #print(csect_codes)
-      
-      section_codes += csect_codes
-    print(csect_count)
-  
+      csects_dict.update(csect_dict)
+    # since collapsibles are all already processed, compile sect_dict and return early
+    sect_val_dict.update(csects_dict)
+    sect_dict = {sec_title: sect_val_dict}
+    #print(json.dumps(sect_dict, indent=2))
+    return sect_dict  
   
   # no collapsibles, just one body section in the 'blue box'
   no_collapsible_sect_class = 'css-tne7gz-StyledLinkGroup exq3dcx7'
@@ -104,7 +108,11 @@ def parse_section(section):
 
   return sect_dict
 
-# find other collapsibles 
+# collapsibles inside the 'blue box'
+# specialisation scraper didnt need this because the 'blue boxes'' collapsibles
+# are still part of the 'blue box' when it comes to course offereings
+# however, programs have a 'disciplinary structure' section that have discrete
+# entries which cannot be homogenised into one single list
 def process_csect(csect):
   #print(csect.text)
   # course or spec list
@@ -177,10 +185,10 @@ def process_csect(csect):
 
   csect_dict_val = {'name': header_title}
   csect_dict_val.update({'uoc': header_uoc})
-  csect_dict_val.update({'content': desc_text})
+  csect_dict_val.update({'requirements': desc_text})
   csect_dict_val.update(spec_dict)
   csect_dict = {header_title: csect_dict_val}
-  print(json.dumps(csect_dict, indent=2))
+  #print(json.dumps(csect_dict, indent=2))
   return csect_dict
 
 # finds all 'blocks' under every collapsible blue box
@@ -254,3 +262,8 @@ def parse_ccollapsible(collapsibles, one_list_only):
   else:
     c_list_dict = {'course_groups': c_list}
   return c_list_dict
+
+def parse_psdesc(prog_strucure_desc):
+  ps_desc = format_overview_text(prog_strucure_desc)
+  ps_desc = re.sub('[\n]{3,}', '\n\n', ps_desc)
+  return ps_desc

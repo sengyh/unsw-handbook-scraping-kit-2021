@@ -50,7 +50,7 @@ def test():
   rphf = open(raw_prog_html, 'r')
   soup = bs4.BeautifulSoup(rphf, "lxml")
   prog_dict = parse_prog_soup(soup)
-  #print(json.dumps(prog_dict, indent=2))
+  print(json.dumps(prog_dict, indent=2))
   return
 
 if __name__ == '__main__':

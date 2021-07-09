@@ -6,30 +6,30 @@ import os
 
 def prog_scraper():
   prog_file = Path.cwd() / '..' / 'data' / 'json' / 'all_programs.json'
-  #all_progs_dict = load_prog_dict(prog_file)
+  all_progs_dict = load_prog_dict(prog_file)
   fac_file = Path.cwd() / '..' / 'data' / 'json' / 'faculties.json'
   facf = open(fac_file, 'r')
   fac_data = json.load(facf)
   facf.close()
-  start = False
+  start = True
   for (fac_code, val) in fac_data.items():
-    #print(fac_code)
+    print(fac_code)
     prog_list = val.get('Programs')
     if prog_list:
       for prog in prog_list:
-        if (prog == "3587"):# or start is True):
-          #if start is False:
-          #  print('resuming here...')
+        if (prog == "3362" or start is True):
+          if start is False:
+            print('resuming here...')
           start = True
           prog_json = process_prog(fac_code, prog)
           if (prog_json == "SHTF"):
             print('exiting early')
             start = False
             break
-          #all_progs_dict.update(prog_json)
-        #print('\t' + prog)
+          all_progs_dict.update(prog_json)
+        print('\t' + prog)
 
-  #dump_prog_dict(prog_file, all_progs_dict)
+  dump_prog_dict(prog_file, all_progs_dict)
   return
 
 def load_prog_dict(prog_file):
