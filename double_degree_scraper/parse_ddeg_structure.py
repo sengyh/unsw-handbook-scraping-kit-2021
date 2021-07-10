@@ -2,8 +2,7 @@ import re
 import json
 from body_parser_helpers import format_overview_text
 
-
-def parse_ddeg_structure(ddeg_structure):
+def parse_ddeg_structure(ddeg_structure, sap_list):
   if not ddeg_structure:
     return {'structure': {}}
 
@@ -18,9 +17,13 @@ def parse_ddeg_structure(ddeg_structure):
   
   section_box_class = 'css-8x1vkg-Box-Card-EmptyCard-css-SAccordionContainer e1450wuy4'
   ddeg_struct_sects = ddeg_structure.find_all('div', {'class': section_box_class})
+  i = 0
   for section in ddeg_struct_sects:
     section_dict = parse_section(section) 
+    section_dict = update_section_dict_key(section_dict, sap_list, i)
+    #print(json.dumps(section_dict, indent=2))
     structure_val_dict.update(section_dict)
+    i += 1
 
   structure_dict = {'structure': structure_val_dict}
   #print(json.dumps(structure_dict, indent=2))
@@ -296,3 +299,21 @@ def button_bar_sect_parser(body, button_bar, spec_dict):
     list_key_name = inactive_button.text.lower() + 's'
     spec_dict.update({list_key_name: []})
   return spec_dict
+
+def update_section_dict_key(section_dict, sap_list, count):
+  sect_key = ""
+  for key in section_dict.keys():
+    sect_key = key.lstrip().rstrip()
+    break
+  old_sect_key = sect_key
+  sect_key = re.sub(r' undefined undefined$', '', sect_key)
+  sect_key = sect_key.rstrip('-').rstrip()
+  new_sect_key = sect_key
+  if re.match('^Disciplinary Component$', sect_key):
+    if not sap_list:
+      new_sect_key += ' - ' + str(count + 1)
+    else:
+      new_sect_key += ' - ' + sap_list[count]
+  section_dict[new_sect_key] = section_dict.pop(old_sect_key)
+  #print(json.dumps(section_dict, indent=2))
+  return section_dict

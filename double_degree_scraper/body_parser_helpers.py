@@ -54,7 +54,7 @@ def process_sidebar(sidebar):
           for el in content:
             content_texts.append(el.find(text=True))
           sidebar_dict.update({title_text: content_texts})
-  print(json.dumps(sidebar_dict, indent=2))
+  #print(json.dumps(sidebar_dict, indent=2))
   return sidebar_dict
 
 def format_overview_text(overview_text):

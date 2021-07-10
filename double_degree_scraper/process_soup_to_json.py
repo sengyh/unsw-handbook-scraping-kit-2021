@@ -41,16 +41,15 @@ def parse_body(body):
   overview_dict = {'overview': overview_text}
   body_dict.update(overview_dict)
 
-  # TODO: get stand alone programs
   stand_alone_progs = main_body.find('div', id='StandAlonePrograms')
   stand_alone_progs_dict = parse_stand_alone_progs(stand_alone_progs)
   body_dict.update(stand_alone_progs_dict)
 
   ddeg_structure = main_body.find('div', id='DoubleDegreeStructure')
-  ddeg_structure_dict = parse_ddeg_structure(ddeg_structure)
+  sap_list = stand_alone_progs_dict.get('stand_alone_programs')
+  ddeg_structure_dict = parse_ddeg_structure(ddeg_structure, sap_list)
   body_dict.update(ddeg_structure_dict)
 
-  # TODO: two faculties instead of one, store in list
   sidebar = body.find('div', {'data-testid': 'attributes-table'})
   sidebar_dict = process_sidebar(sidebar)
   body_dict.update(sidebar_dict)

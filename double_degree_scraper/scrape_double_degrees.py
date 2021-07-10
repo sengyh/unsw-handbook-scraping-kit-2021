@@ -5,12 +5,12 @@ import random
 import os
 
 def ddeg_scraper():
-  ddeg_file = Path.cwd() / '..' / 'data' / 'json' / 'all_ddegrams.json'
-  #all_ddegs_dict = load_ddeg_dict(ddeg_file)
+  ddeg_file = Path.cwd() / '..' / 'data' / 'json' / 'all_double_degrees.json'
+  all_ddegs_dict = load_ddeg_dict(ddeg_file)
   start = True
   all_ddegs = get_all_double_degs()
   for ddeg in all_ddegs:
-    if (ddeg == "3593"): # or start is True):
+    if (ddeg == "3955" or start is True):
       if start is False:
         print('resuming here...')
       start = True
@@ -19,10 +19,10 @@ def ddeg_scraper():
         print('exiting early')
         start = False
         break
-      #all_ddegs_dict.update(ddeg_json)
-    #print('\n' + ddeg + '\n')
+      all_ddegs_dict.update(ddeg_json)
+    print('\n' + ddeg + '\n')
 
-  #dump_ddeg_dict(ddeg_file, all_ddegs_dict)
+  dump_ddeg_dict(ddeg_file, all_ddegs_dict)
   return
 
 def load_ddeg_dict(ddeg_file):

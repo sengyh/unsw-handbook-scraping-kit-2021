@@ -44,13 +44,13 @@ def test():
   if (len(sys.argv) == 2):
     ddeg = sys.argv[1].upper()
   ddeg_file = ddeg + '.html'
-  print(ddeg_file)
+  #print(ddeg_file)
   #raw_ddeg_html = Path.cwd() / '..' / 'data' / 'html' / 'ddegs' / ddeg_file
   raw_ddeg_html = Path.cwd() / 'htmls' / ddeg_file
   rphf = open(raw_ddeg_html, 'r')
   soup = bs4.BeautifulSoup(rphf, "lxml")
   ddeg_dict = parse_ddeg_soup(soup)
-  #print(json.dumps(ddeg_dict, indent=2))
+  print(json.dumps(ddeg_dict, indent=2))
   return
 
 if __name__ == '__main__':
