@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from fake_useragent import UserAgent
 from pathlib import Path
-#from process_soup_to_json import parse_ddeg_soup
+from process_soup_to_json import parse_ddeg_soup
 import bs4
 import time
 import random
@@ -17,23 +17,23 @@ def process_ddeg(ddeg):
   if (ddeg_page_html == "SHTF"):
     return "SHTF"
   soup = bs4.BeautifulSoup(ddeg_page_html, "lxml")
-  print(soup)
-  #ddeg_dict = parse_ddeg_soup(soup)
-  #print(json.dumps(ddeg_dict, indent=2))
-  #save_ddeg_page_html(ddeg, str(soup))
-  #time.sleep(random.randint(8,15))
-  return {}#ddeg_dict
+  #print(soup)
+  ddeg_dict = parse_ddeg_soup(soup)
+  print(json.dumps(ddeg_dict, indent=2))
+  save_ddeg_page_html(ddeg, str(soup))
+  time.sleep(random.randint(8,15))
+  return ddeg_dict
 
 def get_ddeg_page_html(ddeg):
   ddeg_url = "https://www.handbook.unsw.edu.au/undergraduate/programs/2021/" + ddeg
   driver = setup_driver()
   driver.get(ddeg_url)
   ddeg_full_body_xpath = "//div[@class='css-et39we-Box-Flex-Row-Row-Main e1gw5x5n1']"
-  #try:
-  Wait(driver,30).until(EC.visibility_of_element_located((By.XPATH, ddeg_full_body_xpath)))
-  #except:
-  #  print('shit hit the fan, aborting...')
-  #  return "SHTF"
+  try:
+    Wait(driver,30).until(EC.visibility_of_element_located((By.XPATH, ddeg_full_body_xpath)))
+  except:
+    print('shit hit the fan, aborting...')
+    return "SHTF"
   time.sleep(4)
   # change from specialisation scraper, only clicks expand button 
   #   on overview and ddegram structure sections
