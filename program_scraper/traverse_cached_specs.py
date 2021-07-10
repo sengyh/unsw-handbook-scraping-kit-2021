@@ -9,7 +9,7 @@ import json
 
 def traverse_cached_progs():
   prog_dir_path = Path.cwd() / '..' / 'data' / 'html' / 'programs'
-  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'tweaked_new_ordered_progs.json'
+  ts_file = Path.cwd() / '..' / 'data' / 'json' / 'new_progs.json'
 
   if not os.path.exists(ts_file):
     tsf = open(ts_file, 'w')
@@ -33,10 +33,10 @@ def traverse_cached_progs():
         tsdict.update(prog_dict)
         f.close()
 
-  #open(ts_file, 'w').close()
-  #tsf = open(ts_file, 'w')
-  #json.dump(tsdict, tsf)
-  #tsf.close()
+  open(ts_file, 'w').close()
+  tsf = open(ts_file, 'w')
+  json.dump(tsdict, tsf)
+  tsf.close()
   return
 
 def test():

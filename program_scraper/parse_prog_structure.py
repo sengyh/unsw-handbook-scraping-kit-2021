@@ -189,7 +189,6 @@ def process_csect(csect):
           one_list_only = True
         elif yb_text.lower().lstrip().rstrip() != header_title.lower().lstrip().rstrip():
           print(header_title + ' -> ' + yb_text)
-          print(elem.text)
 
   # check if there are yellow(or grey) specialisation buttons
   button_bar_class = "css-1h5izuv-Box-Flex-FilterContainer-filters ebfvri70"
@@ -208,7 +207,6 @@ def process_csect(csect):
       if collapsible_body:
         cbody_clist = get_course_codes_from_section(collapsible_body)
       spec_dict = parse_ccollapsible(collapsibles, one_list_only, header_title, cbody_clist)
-      print('parsed ccollapsible to get spec_dict')
     else:
       course_list = get_course_codes_from_section(body)
       spec_dict = {list_key_name: course_list}
@@ -223,8 +221,6 @@ def process_csect(csect):
 
 # get course list/groups from the collapsible inside the collapsible
 def parse_ccollapsible(collapsibles, one_list_only, parent_htitle, cpbody_clist):
-  print(parent_htitle)
-  print(one_list_only)
   yellow_button_class = "css-1td4qbd-Pill-Badge-css etsewye0"
   c_list_dict = {}
   c_list = []
