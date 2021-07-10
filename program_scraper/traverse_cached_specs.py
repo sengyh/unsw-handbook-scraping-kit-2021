@@ -23,8 +23,8 @@ def traverse_cached_progs():
   for root, dirs, files in os.walk(prog_dir_path):
     for directory in dirs:
       print(directory)
-    for fi in sorted(files): #, key=lambda x: (x[5], x[0])):
-      if (fi == 'BINFB1.html' or cont is True):
+    for fi in sorted(files):
+      if (fi == '3778.html' or cont is True):
         cont = True
         print(fi)
         f = open(os.path.join(root, fi), 'r')
@@ -33,10 +33,10 @@ def traverse_cached_progs():
         tsdict.update(prog_dict)
         f.close()
 
-  open(ts_file, 'w').close()
-  tsf = open(ts_file, 'w')
-  json.dump(tsdict, tsf)
-  tsf.close()
+  #open(ts_file, 'w').close()
+  #tsf = open(ts_file, 'w')
+  #json.dump(tsdict, tsf)
+  #tsf.close()
   return
 
 def test():

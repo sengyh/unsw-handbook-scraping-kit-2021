@@ -176,6 +176,7 @@ def process_csect(csect):
   collapsibles = body.find_all('div', {'class': collapsible_class})
   collapsibles_exist = False
   one_list_only = False
+  
   if collapsibles:
     collapsibles_exist = True
     if len(collapsibles) == 1:
@@ -184,19 +185,30 @@ def process_csect(csect):
       yellow_button = elem.find('span', {'class': yellow_button_class})
       if yellow_button:
         yb_text = yellow_button.text.lstrip().rstrip()
-        if yb_text == "One of the following:":
+        if yb_text.lower().rstrip() == "one of the following:":
           one_list_only = True
+        elif yb_text.lower().lstrip().rstrip() != header_title.lower().lstrip().rstrip():
+          print(header_title + ' -> ' + yb_text)
+          print(elem.text)
 
   # check if there are yellow(or grey) specialisation buttons
   button_bar_class = "css-1h5izuv-Box-Flex-FilterContainer-filters ebfvri70"
   button_bar = body.find('div', {'class': button_bar_class})
   list_key_name = "courses"
   spec_dict = {}
+  # 3586 edge case, need button bar and one_list only to be true
   if button_bar:
     spec_dict = button_bar_sect_parser(body, button_bar, spec_dict)
   else:
     if collapsibles_exist:
-      spec_dict = parse_ccollapsible(collapsibles, one_list_only)
+      # check if body of parent collapsible has courses ( program 7002 edge case >:( )
+      collapsible_body_class = "css-bnbsb9-StyledLinkGroup exq3dcx7"
+      collapsible_body = body.find('div', {'class': collapsible_body_class})
+      cbody_clist = []
+      if collapsible_body:
+        cbody_clist = get_course_codes_from_section(collapsible_body)
+      spec_dict = parse_ccollapsible(collapsibles, one_list_only, header_title, cbody_clist)
+      print('parsed ccollapsible to get spec_dict')
     else:
       course_list = get_course_codes_from_section(body)
       spec_dict = {list_key_name: course_list}
@@ -208,6 +220,40 @@ def process_csect(csect):
   csect_dict = {header_title: csect_dict_val}
   #print(json.dumps(csect_dict, indent=2))
   return csect_dict
+
+# get course list/groups from the collapsible inside the collapsible
+def parse_ccollapsible(collapsibles, one_list_only, parent_htitle, cpbody_clist):
+  print(parent_htitle)
+  print(one_list_only)
+  yellow_button_class = "css-1td4qbd-Pill-Badge-css etsewye0"
+  c_list_dict = {}
+  c_list = []
+  for elem in collapsibles:  
+    yellow_button = elem.find('span', {'class': yellow_button_class})
+    if yellow_button:
+      yb_text = yellow_button.text.lstrip().rstrip()
+      # one of the following means that it's one cohesive course list
+      if one_list_only:
+        if yb_text.lower().rstrip() == "one of the following:":
+          pick_one_list = get_course_codes_from_section(elem)
+          separator = ' | '
+          choose_one = separator.join(pick_one_list)
+          c_list += cpbody_clist
+          c_list.append(choose_one)
+          c_list = sorted(list(set(c_list)))
+          continue
+        else:
+          section_list = get_course_codes_from_section(elem)
+          c_list += section_list 
+      else:
+        csect_courses = get_course_codes_from_section(elem)
+        group_dict = {yb_text: csect_courses}
+        c_list.append(group_dict)
+  if one_list_only:
+    c_list_dict = {'courses': c_list}
+  else:
+    c_list_dict = {'course_groups': c_list}
+  return c_list_dict
 
 # finds all 'blocks' under every collapsible blue box
 def get_course_codes_from_section(section):
@@ -236,8 +282,6 @@ def get_course_codes_from_section(section):
     le_code = list_elem.find('div', {'class': le_code_class})
     #print(le_code.text)
     sec_ccodes.append(le_code.text)
-
-
   return sec_ccodes
 
 def parse_csect_desc(body):
@@ -250,36 +294,6 @@ def parse_csect_desc(body):
       continue
     desc += el
   return desc
-
-# get course list/groups from the collapsible inside the collapsible
-def parse_ccollapsible(collapsibles, one_list_only):
-  yellow_button_class = "css-1td4qbd-Pill-Badge-css etsewye0"
-  c_list_dict = {}
-  c_list = []
-  for elem in collapsibles:  
-    yellow_button = elem.find('span', {'class': yellow_button_class})
-    if yellow_button:
-      yb_text = yellow_button.text.lstrip().rstrip()
-      # one of the following means that it's one cohesive course list
-      if one_list_only:
-        if yb_text == "One of the following:":
-          pick_one_list = get_course_codes_from_section(elem)
-          separator = ' | '
-          choose_one = separator.join(pick_one_list)
-          c_list.append(choose_one)
-          continue
-        else:
-          section_list = get_course_codes_from_section(elem)
-          c_list += section_list
-      else:
-        csect_courses = get_course_codes_from_section(elem)
-        group_dict = {yb_text: csect_courses}
-        c_list.append(group_dict)
-  if one_list_only:
-    c_list_dict = {'courses': c_list}
-  else:
-    c_list_dict = {'course_groups': c_list}
-  return c_list_dict
 
 def parse_psdesc(prog_strucure_desc):
   ps_desc = format_overview_text(prog_strucure_desc)
