@@ -65,6 +65,25 @@ def parse_body(body):
       exclc_list.append(exc.text)
   body_dict.update({'exclusion_courses': exclc_list})
 
+  # is gen ed &| multi-term
+  course_attrs = body.find('div', {'id': 'CourseAttributes'})
+  is_gen_ed = False
+  is_intro = False
+  is_multi_term = False
+  if course_attrs:
+    cattr_elem_class = 'css-3yvuv1-SDefaultHeading-css el7mbl42'
+    cattr_elems = course_attrs.find_all("strong", {'class': cattr_elem_class})
+    for c_attr in cattr_elems:
+      if (c_attr.text.lstrip().rstrip() == 'General Education'):
+        is_gen_ed = True
+      if (c_attr.text.lstrip().rstrip() == 'Introductory Course'):
+        is_intro = True
+      if (c_attr.text.lstrip().rstrip() == 'Multi-Term Course'):
+        is_multi_term = True
+  body_dict.update({'is_gen_ed': is_gen_ed})
+  body_dict.update({'is_intro': is_intro})
+  body_dict.update({'is_multi_term': is_multi_term})
+
   # sidebar key value elems
   sidebar_elems = body.find_all('div', {'class': 'css-1cq5lls-Box-AttrContainer esd54cc0'})
   for div in sidebar_elems:

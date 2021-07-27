@@ -7,7 +7,7 @@ from course_page_parser import create_course_json
 
 def test_course_parser():
   sub = 'COMP'
-  code = '2521'
+  code = '9243'
   if (len(sys.argv) == 3):
     sub = sys.argv[1].upper()
     code = sys.argv[2]

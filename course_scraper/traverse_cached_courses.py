@@ -20,24 +20,36 @@ def traverse_cached_courses():
   tcf = open(tc_file, 'r')
   tcdict = json.load(tcf)
   tcf.close()
-  cont = False
+  cont = True
   for root, dirs, files in os.walk(hc_path):
     dirs.sort()
     for fi in sorted(files):
-      if (fi == 'NANO1001.html' or cont is True):
+      if (fi == 'COMP1511.html' or cont is True):
         cont = True
-        print(fi)
+        course = fi.split('.')[0]
+
+        print(course + '=', end='')
+
         f = open(os.path.join(root, fi), 'r')
         soup = BeautifulSoup(f, 'lxml')
         head = soup.find("div", {"class":"css-1999l0b-Box-Flex-StyledFlex e3iudi70"})
         body = soup.find("div",{"class": "css-et39we-Box-Flex-Row-Row-Main e1gw5x5n1"})
         course_json = create_course_json(head, body)
+       
+        print(course_json[course]['uoc'] + '=', end='')
+        print(course_json[course]['prereqs'])
+        #print(json.dumps(course_json, indent=2))
+
         tcdict.update(course_json)
         f.close()
       
+  write_json_to_file(tc_file, tcdict)
+  return
+
+def write_json_to_file(tc_file, tcdict):
   open(tc_file, 'w').close()
   tcf = open(tc_file, 'w')
-  json.dump(tcdict, tcf, sort_keys=True)
+  json.dump(tcdict, tcf, sort_keys=False)
   tcf.close()
   return
 
