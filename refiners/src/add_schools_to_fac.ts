@@ -1,5 +1,5 @@
-import * as faculties from "../../data/json/faculties.json";
-import * as courses from "../../data/json/courses.json";
+import * as faculties from "../../data/json/raw/faculties.json";
+import * as courses from "../../data/json/raw/courses.json";
 import _ from "lodash";
 import * as fs from "fs";
 
@@ -43,33 +43,50 @@ type ProcessedCourse = {
   is_multi_term: boolean;
 }
 
-/*
-  open fac file, deep copy
-    add school attr
-    fill non existent attrs (homogenise)
-  create school json
-    school -> subject
-*/
-
 const main = (): void => {
   const filled_courses: any = fill_courses();
   add_schools_to_facs(filled_courses);
   return;
 }
 
-const fill_courses = (): any => {
+const fill_courses = (): Courses => {
   let courses_dc: any = _.cloneDeep(courses);
   let filled_courses: any = {};
   for (let [key, val] of Object.entries(courses_dc)){
-    let filled_course: any = fill_empty_course_attrs(key, val);
+    if (key === 'default') continue;
+    let filled_course: Course = fill_empty_course_attrs(key, val);
     filled_courses = {...filled_courses, ...filled_course};
   }
-  delete filled_courses['default'];
-  //fs.writeFileSync('../data/json/courses.json', JSON.stringify(filled_courses,null,2));
+  //fs.writeFileSync('../data/json/courses_test.json', JSON.stringify(filled_courses,null,2));
   return filled_courses;
 }
 
-const add_schools_to_facs = (filled_courses: any): void => {
+const add_schools_to_facs = (filled_courses: Courses): void => {
+  let fac_name_abbr: any = {};
+  let facs_dc: any = _.cloneDeep(faculties)
+  // build object showing relationship of faculty codes and full names
+  for (let [key, val] of Object.entries(facs_dc)) { 
+    if (key === 'default') continue;
+    let f_val: any = val;
+    fac_name_abbr = {...fac_name_abbr, ...{[f_val['name']]: key}};
+    facs_dc[key] = {...facs_dc[key], ...{'schools': []}};  
+  }
+  delete facs_dc['default'];
+  
+  // fill schools array in faculty by traversing all courses
+  for (let [key, val] of Object.entries(filled_courses)) {
+    const c_fac = val['faculty'];
+    if (c_fac === "") continue;
+    const c_sch = val['school'];
+    const fac_code = fac_name_abbr[c_fac];
+    let fac_school_arr: string[] = facs_dc[fac_code]['schools'];
+    if (!fac_school_arr.includes(c_sch) && c_sch !== "") {
+      fac_school_arr.push(c_sch);
+      facs_dc[fac_code]['schools'] = fac_school_arr;
+    }
+  }
+  //console.log(JSON.stringify(facs_dc,null,2))
+  fs.writeFileSync('../data/json/faculties.json', JSON.stringify(facs_dc,null,2));
   return;
 }
 

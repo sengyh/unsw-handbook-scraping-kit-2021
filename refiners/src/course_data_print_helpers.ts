@@ -1,5 +1,4 @@
 import * as courses from "../../data/json/courses.json";
-import * as f_courses from "../../data/json/courses_partfill.json";
 import * as subjects from "../../data/json/subjects.json";
 import * as faculties from "../../data/json/faculties.json";
 import * as fs from "fs";
@@ -50,7 +49,7 @@ const get_calendar_terms = (): void => {
 }
 
 const print_all_attrs = (): void => {
-  for (let [course_code, course_attributes] of Object.entries(f_courses)){
+  for (let [course_code, course_attributes] of Object.entries(courses)){
     //console.log(Object.keys(course_attributes))
     let attr_keys: string[] = [];
     for (let attr_key in course_attributes) console.log(attr_key)
