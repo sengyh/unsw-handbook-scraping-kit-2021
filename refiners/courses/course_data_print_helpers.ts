@@ -8,8 +8,8 @@ import { keys } from "lodash";
  const main = (): void => {
   //get_calendar_terms();
   //print_all_attrs();
-  list_all_subjects();
-  //print_all_sub_sch_fac();
+  //list_all_subjects();
+  print_all_sub_sch_fac();
   return;
  }
 
@@ -25,7 +25,8 @@ const print_all_sub_sch_fac = (): void => {
   for (let [course_code, course_attributes] of Object.entries(courses)){
     if (course_code === 'default') continue;
     const sub_code: string = course_code.replace(/[0-9]/g, '');
-    console.log(sub_code + ' -- ' + course_attributes['school'] + ' -- ' + course_attributes['faculty']);
+    //console.log(sub_code + ' -- ' + course_attributes['school'] + ' -- ' + course_attributes['faculty']);
+    console.log(course_attributes['school'])
   }
   return;
 }
