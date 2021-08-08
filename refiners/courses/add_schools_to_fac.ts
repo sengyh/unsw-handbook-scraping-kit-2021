@@ -2,46 +2,8 @@ import * as faculties from "../../data/json/raw/faculties.json";
 import * as courses from "../../data/json/raw/courses.json";
 import _ from "lodash";
 import * as fs from "fs";
+import type { Courses, Course, Faculties } from "../custom_types";
 
-type Courses = Record<string, Course>;
-type ScrapedCourses = Record<string, ScrapedCourse>;
-type ScrapedCourse = Partial<Course>;
-type Course = {
-  name: string;
-  uoc: string;
-  overview: string;
-  prereqs: string;
-  equivalent_courses: string[];
-  exclusion_courses: string[];
-  is_gen_ed: boolean;
-  is_intro: boolean;
-  is_multi_term: boolean;
-  faculty: string;
-  school: string;
-  study_level: string;
-  offering_terms: string;
-  campus: string;
-  academic_calendar: string;
-  field_of_education: string;
-};
-
-type ProcessedCourse = {
-  name: string;
-  uoc: number;
-  overview: string;
-  school: string;
-  terms_available: string[];
-  equivalent_courses: string[];
-  exclusion_courses: string[];
-  
-  // prereqs: courses (and or or), courses w wam reqs, degree wam reqs, programs
-
-  unlocked_by: string[];
-  unlocks: string[];
-  is_intro: boolean;
-  is_gen_ed: boolean;
-  is_multi_term: boolean;
-}
 
 const main = (): void => {
   const filled_courses: any = fill_courses();
@@ -62,16 +24,17 @@ const fill_courses = (): Courses => {
 }
 
 const add_schools_to_facs = (filled_courses: Courses): void => {
-  let fac_name_abbr: any = {};
-  let facs_dc: any = _.cloneDeep(faculties)
+  let fac_name_abbr: {[key: string]: string} = {};
+  let facs_dc: Faculties = _.cloneDeep(faculties)
   // build object showing relationship of faculty codes and full names
   for (let [key, val] of Object.entries(facs_dc)) { 
     if (key === 'default') continue;
-    let f_val: any = val;
+    let f_val = val;
     fac_name_abbr = {...fac_name_abbr, ...{[f_val['name']]: key}};
     facs_dc[key] = {...facs_dc[key], ...{'schools': []}};  
   }
   delete facs_dc['default'];
+  console.log(fac_name_abbr)
   
   // fill schools array in faculty by traversing all courses
   for (let [key, val] of Object.entries(filled_courses)) {
@@ -79,14 +42,14 @@ const add_schools_to_facs = (filled_courses: Courses): void => {
     if (c_fac === "") continue;
     const c_sch = val['school'];
     const fac_code = fac_name_abbr[c_fac];
-    let fac_school_arr: string[] = facs_dc[fac_code]['schools'];
+    let fac_school_arr: any = facs_dc[fac_code]['schools'];
     if (!fac_school_arr.includes(c_sch) && c_sch !== "") {
       fac_school_arr.push(c_sch);
       facs_dc[fac_code]['schools'] = fac_school_arr;
     }
   }
   //console.log(JSON.stringify(facs_dc,null,2))
-  fs.writeFileSync('../data/json/faculties.json', JSON.stringify(facs_dc,null,2));
+  //fs.writeFileSync('../data/json/faculties_test.json', JSON.stringify(facs_dc,null,2));
   return;
 }
 

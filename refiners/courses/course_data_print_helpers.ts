@@ -6,25 +6,26 @@ import * as _ from "lodash";
 import { keys } from "lodash";
 
  const main = (): void => {
-  add_schools_to_fac();
   //get_calendar_terms();
   //print_all_attrs();
-   return;
+  list_all_subjects();
+  //print_all_sub_sch_fac();
+  return;
  }
 
-const add_schools_to_fac = (): void => {
+const list_all_subjects = (): void => {
+  for (let[key, val] of Object.entries(subjects)){
+    if (key === 'default') continue;
+    console.log(key);
+  }
+  return;
+}
+
+const print_all_sub_sch_fac = (): void => {
   for (let [course_code, course_attributes] of Object.entries(courses)){
-    //console.log(course_code)
-    //console.log(course_attributes['name'])
+    if (course_code === 'default') continue;
     const sub_code: string = course_code.replace(/[0-9]/g, '');
-    if ("school" in course_attributes){
-      const school: string = course_attributes['school'];
-      //console.log(course_attributes["faculty"] + ' -- ' + school + ' -- ' + sub_code)
-      console.log(school + ' -- ' + course_attributes['faculty'])
-    } else {
-      //console.log(course_attributes["faculty"] + ' -- ' + ' -- ' + sub_code);
-      console.log(' -- ' + course_attributes['faculty'])
-    }
+    console.log(sub_code + ' -- ' + course_attributes['school'] + ' -- ' + course_attributes['faculty']);
   }
   return;
 }

@@ -1,11 +1,6 @@
 import * as subjects from "../../data/json/original/subjects.json";
 import * as fs from "fs";
-
-type SubjectType = {
-  code: string;
-  name: string;
-  courses: string[];
-};
+import type { Subject } from "../custom_types";
 
 const reformat_subject_json = (): void => {
   const all_subjects = subjects.all_subjects;
@@ -18,7 +13,7 @@ const reformat_subject_json = (): void => {
   return;
 }
 
-const construct_rsub_obj = (subject: SubjectType): any => {
+const construct_rsub_obj = (subject: Subject): any => {
   const {code, name, courses} = subject;
   const subject_obj: any = {[code]: {"name": name, "courses": courses}};
   return subject_obj;
