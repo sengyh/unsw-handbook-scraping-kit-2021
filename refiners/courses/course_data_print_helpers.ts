@@ -26,7 +26,10 @@ const print_all_sub_sch_fac = (): void => {
     if (course_code === 'default') continue;
     const sub_code: string = course_code.replace(/[0-9]/g, '');
     //console.log(sub_code + ' -- ' + course_attributes['school'] + ' -- ' + course_attributes['faculty']);
-    console.log(course_attributes['school'])
+    //console.log(course_attributes['school'])
+    //console.log(course_attributes['school'] + ' -- ' + course_attributes['faculty']);
+    console.log(sub_code + ' -- ' + course_attributes['school']);
+
   }
   return;
 }

@@ -1,4 +1,4 @@
-import * as subjects from "../../data/json/original/subjects.json";
+import * as subjects from "../../data/json/raw/subjects.json";
 import * as fs from "fs";
 import type { Subject } from "../custom_types";
 
@@ -20,5 +20,3 @@ const construct_rsub_obj = (subject: Subject): any => {
 }
 
 reformat_subject_json();
-
-export default reformat_subject_json;

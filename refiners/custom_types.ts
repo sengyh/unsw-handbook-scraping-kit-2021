@@ -22,11 +22,13 @@ export type Course = {
   field_of_education: string;
 };
 
+export type ProcessedCourses = Record<string, ProcessedCourse>;
 export type ProcessedCourse = {
   name: string;
   uoc: number;
   level: number;
   overview: string;
+  subject: string;
   school: string;
   terms_available: string[];
   equivalent_courses: string[];
@@ -40,11 +42,16 @@ export type ProcessedCourse = {
 };
 
 
-
+export type Subjects = Record<string, Subject>;
 export type Subject = {
   code: string;
   name: string;
   courses: string[];
+};
+
+export type Schools = Record<string, School>;
+export type School = {
+  subjects: string[];
 };
 
 export type Faculties = Record<string, Faculty>;
