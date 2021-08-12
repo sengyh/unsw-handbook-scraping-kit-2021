@@ -1,3 +1,4 @@
+import { LargeNumberLike } from "crypto";
 
 // COURSES
 export type Courses = Record<string, Course>;
@@ -33,9 +34,15 @@ export type ProcessedCourse = {
   terms_available: string[];
   equivalent_courses: string[];
   exclusion_courses: string[]; 
-  // prereqs: courses (and or or), courses w wam reqs, degree wam reqs, programs
   unlocked_by: string[];
   unlocks: string[];
+  other_requirements: {
+    uoc?: number;
+    wam?: number;
+    programs?: number[];
+    specialisation?: string;
+    raw_prereq?: string;
+  };
   is_intro: boolean;
   is_gen_ed: boolean;
   is_multi_term: boolean;

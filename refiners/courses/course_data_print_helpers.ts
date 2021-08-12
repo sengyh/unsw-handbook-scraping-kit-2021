@@ -28,7 +28,12 @@ const print_all_sub_sch_fac = (): void => {
     //console.log(sub_code + ' -- ' + course_attributes['school'] + ' -- ' + course_attributes['faculty']);
     //console.log(course_attributes['school'])
     //console.log(course_attributes['school'] + ' -- ' + course_attributes['faculty']);
-    console.log(sub_code + ' -- ' + course_attributes['school']);
+    //console.log(sub_code + ' -- ' + course_attributes['school']);
+    //console.log(course_attributes['offering_terms'])
+    const terms = course_attributes['offering_terms'];
+    const cal = course_attributes['academic_calendar'];
+    //if (cal === 'Semester' && terms === "Term 2, Term 3") console.log(course_code)
+    console.log(cal + ': ' + terms);
 
   }
   return;
