@@ -1,5 +1,7 @@
 import * as courses from "../../data/json/raw/courses.json";
+import process_prereq from "./process_prereqs";
 import type {Courses, Course, ProcessedCourses, ProcessedCourse} from "../custom_types";
+import type {Prereq} from "./process_prereqs";
 import * as _ from "lodash";
 import * as fs from "fs";
 
@@ -13,10 +15,11 @@ const process_course = (): void => {
     if (key === 'default') continue;
     const code: string = key;
     const attr: Course = val;
-    const terms: string[] = process_offering_terms(attr['offering_terms'], attr['academic_calendar']);
-    const uoc: number = process_uoc(attr['uoc']);
     const subject: string = extract_subject(code);
     const level: number = extract_level(code);
+    const terms: string[] = process_offering_terms(attr['offering_terms'], attr['academic_calendar']);
+    const uoc: number = process_uoc(attr['uoc']);  
+    const prereq_obj: Prereq = process_prereq(attr['prereqs']);
   }
   return;
 }

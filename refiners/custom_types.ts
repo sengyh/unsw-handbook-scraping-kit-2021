@@ -27,9 +27,9 @@ export type ProcessedCourses = Record<string, ProcessedCourse>;
 export type ProcessedCourse = {
   name: string;
   uoc: number;
-  level: number;
   overview: string;
   subject: string;
+  level: number;
   school: string;
   terms_available: string[];
   equivalent_courses: string[];
