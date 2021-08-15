@@ -1,3 +1,6 @@
+import * as _ from "lodash";
+import { start } from "repl";
+
 export type Prereq = {
   unlocked_by: string[];
   other_requirements: {
@@ -20,6 +23,8 @@ const process_prereq = (prereq_str: string): Prereq => {
   return prereq_obj;
 }
 
+// todo in the future: [(preq,71),(creq,-1),(excl,0),(equiv,-1)]
+// array.sort\_by((_,idx): idx)
 const split_raw_prereq_str = (raw_prereq_str: string): string[] => {
   console.log(raw_prereq_str);
 
@@ -33,7 +38,7 @@ const split_raw_prereq_str = (raw_prereq_str: string): string[] => {
   const excl_match: number = raw_prereq_str.search(excl_regex);
   const equiv_match: number = raw_prereq_str.search(equiv_regex);
   const pstr_elem_indexes: number[] = [preq_match, creq_match, excl_match, equiv_match];
-  
+
   // pstr_elem_strings: [prereq_section, coreq_section, excl_section, equiv_section, misc_section]
   let pstr_elem_strings: string[] = new Array(5).fill("");
   const no_match: boolean = pstr_elem_indexes.every(elem => elem === pstr_elem_indexes[0]);
@@ -43,30 +48,51 @@ const split_raw_prereq_str = (raw_prereq_str: string): string[] => {
   } else {
     const no_negatives: number[] = pstr_elem_indexes.filter(num => num >= 0);
     const array_in_order: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] <= elem);
+    const arr = pstr_elem_indexes;
+    console.log(arr + ': ' + array_in_order.toString());
     if (array_in_order) {
-      const arr = pstr_elem_indexes;
-      console.log(arr + ': ' + array_in_order.toString());
+      let starts_from_beginning: boolean = false;    
       // find first non negative number, look for next non negative number
       for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === 0) starts_from_beginning = true;
         if (arr[i] >= 0) {
-          for (let j = i+1; j < arr.length; j++){
+          for (let j = i+1; j < arr.length; j++) {
             // last index reached and still negative
             if (arr[j] < 0 && j + 1 == arr.length) {
-              pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]);
+              pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]).replace(pstr_elem_patterns[i], '');
             }
             if (arr[j] >= 0) {
-              pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], arr[j]);
+              pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], arr[j]).replace(pstr_elem_patterns[i], '');
               i = j;
             }
           }
         }
         if (i == 3 && arr[i] >= 0) {
-          pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]);
+          pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]).replace(pstr_elem_patterns[i], '');
         } 
+      }
+      // has extra stuff in the beginning, slic to misc_section
+      if (!starts_from_beginning && array_in_order){
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] >= 0) {
+            pstr_elem_strings[4] = raw_prereq_str.slice(0, arr[i]);
+            break;
+          }
+        }
       }
     } else {
       // reverse order (figure this shit out)
       // only 2 courses have this condition (for now...)
+      const array_in_rorder: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] >= elem);
+      if (array_in_rorder) {
+        let prev_index: number = raw_prereq_str.length - 1;
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] >= 0) {
+            pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], prev_index).replace(pstr_elem_patterns[i], '');
+            prev_index = arr[i];
+          }
+        }
+      }
     }
   }
   console.log(pstr_elem_strings);
