@@ -39,64 +39,70 @@ const split_raw_prereq_str = (raw_prereq_str: string): string[] => {
   const equiv_match: number = raw_prereq_str.search(equiv_regex);
   const pstr_elem_indexes: number[] = [preq_match, creq_match, excl_match, equiv_match];
 
-  // pstr_elem_strings: [prereq_section, coreq_section, excl_section, equiv_section, misc_section]
+  // pstr_elem_strings: [prereq, coreq, excl, equiv, misc]
   let pstr_elem_strings: string[] = new Array(5).fill("");
   const no_match: boolean = pstr_elem_indexes.every(elem => elem === pstr_elem_indexes[0]);
   if (no_match) {
     console.log(pstr_elem_indexes + ': equal -1s')
     pstr_elem_strings[0] = raw_prereq_str;
   } else {
-    const no_negatives: number[] = pstr_elem_indexes.filter(num => num >= 0);
-    const array_in_order: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] <= elem);
-    const arr = pstr_elem_indexes;
-    console.log(arr + ': ' + array_in_order.toString());
-    if (array_in_order) {
-      let starts_from_beginning: boolean = false;    
-      // find first non negative number, look for next non negative number
+    pstr_elem_strings = constuct_pstr_elem_strings(raw_prereq_str, pstr_elem_patterns, pstr_elem_indexes, pstr_elem_strings);
+  }
+  console.log(pstr_elem_strings);
+  console.log('\n')
+  return pstr_elem_strings;
+}
+
+const constuct_pstr_elem_strings = (raw_prereq_str: string, pstr_elem_patterns: RegExp[], pstr_elem_indexes: number[], pstr_elem_strings: string[]): string[] => {
+  const no_negatives: number[] = pstr_elem_indexes.filter(num => num >= 0);
+  const array_in_order: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] <= elem);
+  const arr = pstr_elem_indexes;
+  console.log(arr + ': ' + array_in_order.toString());
+  if (array_in_order) {
+    let starts_from_beginning: boolean = false;    
+    // find first non negative number, look for next non negative number
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === 0) starts_from_beginning = true;
+      if (arr[i] >= 0) {
+        for (let j = i+1; j < arr.length; j++) {
+          // last index reached and still negative
+          if (arr[j] < 0 && j + 1 == arr.length) {
+            pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]).replace(pstr_elem_patterns[i], '');
+          }
+          if (arr[j] >= 0) {
+            pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], arr[j]).replace(pstr_elem_patterns[i], '');
+            i = j;
+          }
+        }
+      }
+      if (i == 3 && arr[i] >= 0) {
+        pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]).replace(pstr_elem_patterns[i], '');
+      } 
+    }
+    // has extra stuff in the beginning, slic to misc_section
+    if (!starts_from_beginning && array_in_order){
       for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === 0) starts_from_beginning = true;
         if (arr[i] >= 0) {
-          for (let j = i+1; j < arr.length; j++) {
-            // last index reached and still negative
-            if (arr[j] < 0 && j + 1 == arr.length) {
-              pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]).replace(pstr_elem_patterns[i], '');
-            }
-            if (arr[j] >= 0) {
-              pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], arr[j]).replace(pstr_elem_patterns[i], '');
-              i = j;
-            }
-          }
-        }
-        if (i == 3 && arr[i] >= 0) {
-          pstr_elem_strings[i] = raw_prereq_str.slice(arr[i]).replace(pstr_elem_patterns[i], '');
-        } 
-      }
-      // has extra stuff in the beginning, slic to misc_section
-      if (!starts_from_beginning && array_in_order){
-        for (let i = 0; i < arr.length; i++) {
-          if (arr[i] >= 0) {
-            pstr_elem_strings[4] = raw_prereq_str.slice(0, arr[i]);
-            break;
-          }
+          pstr_elem_strings[4] = raw_prereq_str.slice(0, arr[i]);
+          break;
         }
       }
-    } else {
-      // reverse order (figure this shit out)
-      // only 2 courses have this condition (for now...)
-      const array_in_rorder: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] >= elem);
-      if (array_in_rorder) {
-        let prev_index: number = raw_prereq_str.length - 1;
-        for (let i = 0; i < arr.length; i++) {
-          if (arr[i] >= 0) {
-            pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], prev_index).replace(pstr_elem_patterns[i], '');
-            prev_index = arr[i];
-          }
+    }
+  } else {
+    // reverse order (figure this shit out)
+    // only 2 courses have this condition (for now...)
+    const array_in_rorder: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] >= elem);
+    if (array_in_rorder) {
+      let prev_index: number = raw_prereq_str.length - 1;
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] >= 0) {
+          pstr_elem_strings[i] = raw_prereq_str.slice(arr[i], prev_index).replace(pstr_elem_patterns[i], '');
+          prev_index = arr[i];
         }
       }
     }
   }
-  console.log(pstr_elem_strings);
-  console.log('\n')
+  pstr_elem_strings = pstr_elem_strings.map(str => _.trim(str, ',.;: '))
   return pstr_elem_strings;
 }
 
