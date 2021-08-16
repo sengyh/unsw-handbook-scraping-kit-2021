@@ -39,6 +39,8 @@ export type ProcessedCourse = {
   other_requirements: {
     uoc?: number;
     wam?: number;
+    subject?: string;
+    level?: number
     programs?: number[];
     specialisation?: string;
     raw_prereq?: string;

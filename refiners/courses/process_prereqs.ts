@@ -18,7 +18,12 @@ const process_prereq = (prereq_str: string): Prereq => {
     //console.log("n/a")
     return prereq_obj;
   }
-  const [prreq_section, coreq_section, excl_section, equiv_section, misc_section]: string[] = split_raw_prereq_str(prereq_str)
+  const [prereq_section, coreq_section, excl_section, equiv_section, misc_section]: string[] = split_raw_prereq_str(prereq_str);
+  console.log(clean_string(prereq_section));
+  //console.log(clean_string(coreq_section));
+  //console.log(clean_string(excl_section));
+  //console.log(clean_string(equiv_section));
+  //console.log(clean_string(misc_section));
   
   return prereq_obj;
 }
@@ -26,8 +31,7 @@ const process_prereq = (prereq_str: string): Prereq => {
 // todo in the future: [(preq,71),(creq,-1),(excl,0),(equiv,-1)]
 // array.sort\_by((_,idx): idx)
 const split_raw_prereq_str = (raw_prereq_str: string): string[] => {
-  console.log(raw_prereq_str);
-
+  //console.log(raw_prereq_str);
   const prereq_regex: RegExp = /pre[- ]*(r-*eq)*[a-z/]*[:; ]+/gim;  // 1182 matches
   const coreq_regex: RegExp = /co[- ]*((re)*req)+[a-z]*[:; ]+/gim   // 88 matches 
   const excl_regex: RegExp = /excl[a-z]*[;: ]+/gim;   // 78 matches
@@ -43,13 +47,13 @@ const split_raw_prereq_str = (raw_prereq_str: string): string[] => {
   let pstr_elem_strings: string[] = new Array(5).fill("");
   const no_match: boolean = pstr_elem_indexes.every(elem => elem === pstr_elem_indexes[0]);
   if (no_match) {
-    console.log(pstr_elem_indexes + ': equal -1s')
+    //console.log(pstr_elem_indexes + ': equal -1s')
     pstr_elem_strings[0] = raw_prereq_str;
   } else {
     pstr_elem_strings = constuct_pstr_elem_strings(raw_prereq_str, pstr_elem_patterns, pstr_elem_indexes, pstr_elem_strings);
   }
-  console.log(pstr_elem_strings);
-  console.log('\n')
+  //console.log(pstr_elem_strings);
+  //console.log('\n')
   return pstr_elem_strings;
 }
 
@@ -57,7 +61,7 @@ const constuct_pstr_elem_strings = (raw_prereq_str: string, pstr_elem_patterns: 
   const no_negatives: number[] = pstr_elem_indexes.filter(num => num >= 0);
   const array_in_order: boolean = no_negatives.every((elem,i,arr) => !i || arr[i-1] <= elem);
   const arr = pstr_elem_indexes;
-  console.log(arr + ': ' + array_in_order.toString());
+  //console.log(arr + ': ' + array_in_order.toString());
   if (array_in_order) {
     let starts_from_beginning: boolean = false;    
     // find first non negative number, look for next non negative number
@@ -102,9 +106,25 @@ const constuct_pstr_elem_strings = (raw_prereq_str: string, pstr_elem_patterns: 
       }
     }
   }
-  pstr_elem_strings = pstr_elem_strings.map(str => _.trim(str, ',.;: '))
   return pstr_elem_strings;
 }
+
+const clean_string = (str: string): string => {
+  let cstr: string = _.trim(str, ',.;: ');
+  cstr = cstr.replace(/ {2,}/g, ' ');
+  cstr = cstr.replace(/ (and|or)$/gi, '');
+  cstr = cstr.replace(/([0-9])(or|and)/gmi, "$1 $2");
+  return cstr;
+}
+
+
+  // /([0-9]+)( *uoc| *units* of credits*)/gmi : 422 matches
+
+  // /level *([0-9]+)/gmi : 158 matches
+
+  // capture course group (has more than one course)
+  // /[\[(]*[a-z]{4}[0-9]{4}.*[a-z]{4}[0-9]{4}[\])]*/gmi : 616 matches
+
 
 
 export default process_prereq;
