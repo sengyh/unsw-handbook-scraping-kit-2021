@@ -40,10 +40,11 @@ export type ProcessedCourse = {
     uoc?: number;
     wam?: number;
     subject?: string;
-    level?: number
+    level?: number;
     programs?: number[];
     specialisation?: string;
-    raw_prereq?: string;
+    all_found_courses?: string[];
+    raw_str?: string;
   };
   is_intro: boolean;
   is_gen_ed: boolean;
