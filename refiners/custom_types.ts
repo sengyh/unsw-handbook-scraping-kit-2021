@@ -43,7 +43,9 @@ export type ProcessedCourse = {
     level?: number;
     programs?: number[];
     specialisation?: string;
+    corequisites?: string[];
     all_found_courses?: string[];
+    course_group_bool?: string;
     raw_str?: string;
   };
   is_intro: boolean;

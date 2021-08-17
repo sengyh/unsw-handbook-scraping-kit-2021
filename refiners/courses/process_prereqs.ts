@@ -41,10 +41,14 @@ const clean_string = (str: string): string => {
 }
 
 const process_preq_section = (preq_section: string): void => {
-  let preq_str = clean_string(preq_section);
-  process.stdout.write(preq_str + ' -');
+  const preq_str = clean_string(preq_section);
+  // maybe get all found codes into an all list, use this to fill unlocks
+  // ci: boolean expression
+  //process.stdout.write(preq_str + ' -');
   let course_group = preq_str.match(/[\[(]*[a-z]{4}[0-9]{4}.*[a-z]{4}[0-9]{4}[\])]*/gmi);
   //course_group?.forEach(str => console.log(str));
+  // only one course group
+  // if no course group, check for individual course
  
 
 
@@ -53,17 +57,22 @@ const process_preq_section = (preq_section: string): void => {
   let wam_str = parse_wam_req(preq_str);
   if (wam_str !== "") {
     const wam_req: number = parseInt(wam_str);
-    //console.log(wam_req)
   }
   let uoc_str = parse_uoc_req(preq_str);
   if (uoc_str !== "") {
     const uoc_req: number = parseInt(uoc_str);
-    console.log(uoc_req);
+    if (uoc_req > 12 || (uoc_req === 12 && preq_str.match(/^12UOC/g))) {
+      //console.log(preq_str)
+      const lvl_req: number = parse_lvl_req(preq_str);
+      if (lvl_req > 0) {
+        // make attribute
+      }
+    }
+    const sub_req: string | null = parse_sub_req(preq_str);
+    if (sub_req) {
+      // make attr
+    }
   }
-  // if 12 uoc and has level then record uoc, otherwise ignore
-  
-
-
   return;
 }
 
@@ -78,7 +87,6 @@ const parse_wam_req = (preq_str: string): string => {
     wam_str = wam_match[0];
     wam_str = wam_str.replace(/[^0-9]/gmi, '');
   }
-  //console.log(wam_str)
   return wam_str;
 }
 
@@ -91,6 +99,27 @@ const parse_uoc_req = (preq_str: string): string => {
     uoc_str = uoc_str.replace(/[^0-9]/gmi, '');
   }
   return uoc_str;
+}
+
+const parse_lvl_req = (preq_str: string): number => {
+  const level_pattern: RegExp = /^\d{2,}UOC (or|in|at) level ([0-9])/gi;
+  let level_req: number = -1;
+  if (preq_str.match(level_pattern)) {
+    level_req = parseInt(preq_str.replace(level_pattern, '$2'));
+  }
+  return level_req;
+}
+
+const parse_sub_req = (preq_str: string): string | null => {
+  const sub_pattern = /\d{2,}UOC (or|in|at) (level [0-9] )*([a-z]{4} courses)/gmi;
+  let sub_match = preq_str.match(sub_pattern)
+  if (sub_match) {
+    let sub_match_str: string = sub_match[0].replace(/ Level \d+/gmi, '');
+    const sub_req: string = sub_match_str.replace(/\d{2,}UOC (or|in|at) ([a-z]{4}) courses/gmi, '$2').slice(0,4).toUpperCase();
+    console.log(sub_req);
+    return sub_req;
+  }
+  return null;
 }
 
 
