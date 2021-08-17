@@ -2,6 +2,9 @@ import * as _ from "lodash";
 import { parse } from "path/posix";
 import { start } from "repl";
 import split_raw_prereq_str from "./split_raw_prereq_str";
+import * as courses from '../../data/json/raw/courses.json';
+import * as programs from '../../data/json/raw/programs.json';
+import * as ddegs from '../../data/json/raw/double_degrees.json';
 
 export type Prereq = {
   unlocked_by: string[];
@@ -26,7 +29,11 @@ const process_prereq = (prereq_str: string): Prereq => {
   //console.log(clean_string(excl_section));
   //console.log(clean_string(equiv_section));
   //console.log(clean_string(misc_section));
+
   process_preq_section(prereq_section);
+  //process_creq_section(coreq_section);
+  //process_excl_section(excl_section);
+  //process_equiv_section(equiv_section);
   
   return prereq_obj;
 }
@@ -57,12 +64,12 @@ const process_preq_section = (preq_section: string): void => {
   let wam_str = parse_wam_req(preq_str);
   if (wam_str !== "") {
     const wam_req: number = parseInt(wam_str);
+    // make attribute
   }
   let uoc_str = parse_uoc_req(preq_str);
   if (uoc_str !== "") {
     const uoc_req: number = parseInt(uoc_str);
     if (uoc_req > 12 || (uoc_req === 12 && preq_str.match(/^12UOC/g))) {
-      //console.log(preq_str)
       const lvl_req: number = parse_lvl_req(preq_str);
       if (lvl_req > 0) {
         // make attribute
@@ -70,12 +77,32 @@ const process_preq_section = (preq_section: string): void => {
     }
     const sub_req: string | null = parse_sub_req(preq_str);
     if (sub_req) {
-      // make attr
+      // make attribute
     }
   }
+  let prog_arr = parse_prog_req(preq_str);
   return;
 }
 
+const process_creq_section = (creq_str: string): void => {
+  return;
+}
+
+// get course list, check if they are in courses.json, 
+// check if course already exists inside exclusion_courses, if not append 
+const process_excl_section = (excl_str: string): void => {
+  if (excl_str === "") return;
+  console.log(excl_str);
+  compile_course_list(excl_str);
+  return;
+}
+
+const process_equiv_section = (equiv_str: string): void => {
+  return;
+}
+
+
+// HELPERS
 // extract wam req: 16 back, 11 front
 const parse_wam_req = (preq_str: string): string => {
   let wam_str: string = "";
@@ -116,10 +143,29 @@ const parse_sub_req = (preq_str: string): string | null => {
   if (sub_match) {
     let sub_match_str: string = sub_match[0].replace(/ Level \d+/gmi, '');
     const sub_req: string = sub_match_str.replace(/\d{2,}UOC (or|in|at) ([a-z]{4}) courses/gmi, '$2').slice(0,4).toUpperCase();
-    console.log(sub_req);
+    //console.log(sub_req);
     return sub_req;
   }
   return null;
+}
+
+// only gets programs which are currently offered
+const parse_prog_req = (preq_str: string): string[] => {
+  // ([ ,(][0-9]{4}[, )])|([ ,][0-9]{4}$)
+  let req_progs: string[] = [];
+  let prog_code_pattern: RegExp = /([ ,(][0-9]{4}[, )])|([ ,][0-9]{4}$)|(^[0-9]{4})/gmi;
+  if (preq_str.match(/program/gmi)) {
+    let compiled_progs = Array.from(preq_str.matchAll(prog_code_pattern), pcode => _.trim(pcode[0], ' ,()'));
+    req_progs = compiled_progs.filter(code => code in programs || code in ddegs);
+  }
+  return req_progs;
+}
+
+const compile_course_list = (cgroup_str: string): string[] => {
+  let compiled_courses: string[] = Array.from(cgroup_str.matchAll(/[a-z]{4}[0-9]{4}/gmi), ccode => ccode[0].toUpperCase());
+  //compiled_courses = compiled_courses.filter(code => code in courses);
+  console.log(compiled_courses)
+  return compiled_courses;
 }
 
 
