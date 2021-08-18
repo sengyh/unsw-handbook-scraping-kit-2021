@@ -5,24 +5,30 @@ import split_raw_prereq_str from "./split_raw_prereq_str";
 import * as courses from '../../data/json/raw/courses.json';
 import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req } from './prereq_section_helpers'
 
-
 export type Prereq = {
+  equivalent_courses: string[];
+  exclusion_courses: string[]; 
   unlocked_by: string[];
+  unlocks: string[];
   other_requirements: {
     uoc?: number;
     wam?: number;
+    subject?: string;
+    level?: number;
     programs?: number[];
-    specialisation?: string;
-    raw_prereq?: string;
+    corequisites?: string[];
+    all_found_courses?: string[];
+    course_group_boolean?: string;
+    raw_str?: string;
   };
 }
 
 const process_prereq = (prereq_str: string, exclusion_courses: string[], equivalent_courses: string[]): Prereq => {
-  let prereq_obj: Prereq = {unlocked_by: [], other_requirements: {}}
+  let prereq_obj: Prereq = initialise_prereq_obj(prereq_str, exclusion_courses, equivalent_courses)
   if (prereq_str === 'None' || prereq_str === '') {
-    //console.log("n/a")
+    //console.log(JSON.stringify(prereq_obj, null, 2))
     return prereq_obj;
-  }
+  } 
   const [prereq_section, coreq_section, excl_section, equiv_section, misc_section]: string[] = split_raw_prereq_str(prereq_str);
   //console.log(clean_string(prereq_section));
   //console.log(clean_string(coreq_section));
@@ -32,9 +38,11 @@ const process_prereq = (prereq_str: string, exclusion_courses: string[], equival
 
   //process_preq_section(prereq_section);
   //process_creq_section(coreq_section);
-  //process_excl_section(excl_section, exclusion_courses);
-  process_equiv_section(equiv_section, equivalent_courses);
-  
+  prereq_obj.exclusion_courses = process_excl_section(excl_section, exclusion_courses);
+  prereq_obj.equivalent_courses = process_equiv_section(equiv_section, equivalent_courses);
+  if (prereq_obj.exclusion_courses.length > 0 || prereq_obj.equivalent_courses.length > 0) {
+    console.log(JSON.stringify(prereq_obj, null, 2));
+  }
   return prereq_obj;
 }
 
@@ -98,7 +106,7 @@ const process_equiv_section = (equiv_str: string, equivalent_courses: string[]):
 const compile_course_list = (cgroup_str: string, check_valid_course: boolean): string[] => {
   let compiled_courses: string[] = Array.from(cgroup_str.matchAll(/[a-z]{4}[0-9]{4}/gmi), ccode => ccode[0].toUpperCase());
   if (check_valid_course) compiled_courses = compiled_courses.filter(code => code in courses);
-  console.log(compiled_courses)
+  //console.log(compiled_courses)
   return compiled_courses;
 }
 
@@ -109,6 +117,20 @@ const clean_string = (str: string): string => {
   cstr = cstr.replace(/([0-9])(or|and)/gmi, "$1 $2");
   cstr = cstr.replaceAll(/([0-9]+)( *uoc| *units* of credits*)/gmi, '$1UOC'); // 422 matches
   return cstr;
+}
+
+const initialise_prereq_obj = (prereq_str: string, exclusion_courses: string[], equivalent_courses: string[]): Prereq => {
+  let prereq_obj: Prereq = {
+    'equivalent_courses': equivalent_courses,
+    'exclusion_courses': exclusion_courses,
+    'unlocked_by': [],
+    'unlocks': [],
+    'other_requirements': {
+    }
+  }
+  if (prereq_str === "None" || prereq_str === "") return prereq_obj 
+  if (prereq_str !== "") prereq_obj.other_requirements.raw_str = prereq_str;
+  return prereq_obj;
 }
 
 export default process_prereq;
