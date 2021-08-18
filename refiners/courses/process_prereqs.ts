@@ -15,7 +15,7 @@ export type Prereq = {
     wam?: number;
     subject?: string;
     level?: number;
-    programs?: number[];
+    programs?: string[];
     corequisites?: string[];
     all_found_courses?: string[];
     course_group_boolean?: string;
@@ -36,17 +36,18 @@ const process_prereq = (prereq_str: string, exclusion_courses: string[], equival
   //console.log(clean_string(equiv_section));
   //console.log(clean_string(misc_section));
 
-  //process_preq_section(prereq_section);
+  prereq_obj = process_preq_section(prereq_section, prereq_obj);
   //process_creq_section(coreq_section);
   prereq_obj.exclusion_courses = process_excl_section(excl_section, exclusion_courses);
   prereq_obj.equivalent_courses = process_equiv_section(equiv_section, equivalent_courses);
-  if (prereq_obj.exclusion_courses.length > 0 || prereq_obj.equivalent_courses.length > 0) {
-    console.log(JSON.stringify(prereq_obj, null, 2));
-  }
+  //if (prereq_obj.exclusion_courses.length > 0 || prereq_obj.equivalent_courses.length > 0) {
+  //  console.log(JSON.stringify(prereq_obj, null, 2));
+  //}
+  console.log(JSON.stringify(prereq_obj, null, 2));
   return prereq_obj;
 }
 
-const process_preq_section = (preq_section: string): void => {
+const process_preq_section = (preq_section: string, prereq_obj: Prereq): Prereq => {
   const preq_str = clean_string(preq_section);
   // maybe get all found codes into an all list, use this to fill unlocks
   // ci: boolean expression
@@ -59,24 +60,29 @@ const process_preq_section = (preq_section: string): void => {
   let wam_str = parse_wam_req(preq_str);
   if (wam_str !== "") {
     const wam_req: number = parseInt(wam_str);
-    // make attribute
+    prereq_obj.other_requirements.wam = wam_req;
   }
   let uoc_str = parse_uoc_req(preq_str);
   if (uoc_str !== "") {
     const uoc_req: number = parseInt(uoc_str);
     if (uoc_req > 12 || (uoc_req === 12 && preq_str.match(/^12UOC/g))) {
+      prereq_obj.other_requirements.uoc = uoc_req;
       const lvl_req: number = parse_lvl_req(preq_str);
       if (lvl_req > 0) {
-        // make attribute
+        prereq_obj.other_requirements.level = lvl_req;
       }
     }
-    const sub_req: string | null = parse_sub_req(preq_str);
-    if (sub_req) {
-      // make attribute
+    const sub_req: string = parse_sub_req(preq_str);
+    if (sub_req !== "") {
+      prereq_obj.other_requirements.subject = sub_req;
     }
   }
   let prog_arr = parse_prog_req(preq_str);
-  return;
+  if (prog_arr.length > 0) {
+    prereq_obj.other_requirements.programs = prog_arr;
+  }
+  //console.log(JSON.stringify(prereq_obj, null, 2))
+  return prereq_obj;
 }
 
 const process_creq_section = (creq_str: string): void => {
@@ -106,7 +112,6 @@ const process_equiv_section = (equiv_str: string, equivalent_courses: string[]):
 const compile_course_list = (cgroup_str: string, check_valid_course: boolean): string[] => {
   let compiled_courses: string[] = Array.from(cgroup_str.matchAll(/[a-z]{4}[0-9]{4}/gmi), ccode => ccode[0].toUpperCase());
   if (check_valid_course) compiled_courses = compiled_courses.filter(code => code in courses);
-  //console.log(compiled_courses)
   return compiled_courses;
 }
 

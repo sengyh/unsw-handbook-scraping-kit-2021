@@ -13,6 +13,7 @@ import * as fs from "fs";
 const process_course = (): void => {
   for (let [key, val] of Object.entries(courses)) {
     if (key === 'default') continue;
+    console.log(key)
     const code: string = key;
     const attr: Course = val;
     const subject: string = extract_subject(code);

@@ -40,7 +40,7 @@ export const parse_lvl_req = (preq_str: string): number => {
 }
 
 // only get sub req if level req exists
-export const parse_sub_req = (preq_str: string): string | null => {
+export const parse_sub_req = (preq_str: string): string => {
   const sub_pattern = /\d{2,}UOC (or|in|at) (level [0-9] )*([a-z]{4} courses)/gmi;
   let sub_match = preq_str.match(sub_pattern)
   if (sub_match) {
@@ -49,7 +49,7 @@ export const parse_sub_req = (preq_str: string): string | null => {
     //console.log(sub_req);
     return sub_req;
   }
-  return null;
+  return "";
 }
 
 // only gets programs which are currently offered
