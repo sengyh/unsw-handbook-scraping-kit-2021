@@ -3,7 +3,7 @@ import { parse } from "path/posix";
 import { start } from "repl";
 import split_raw_prereq_str from "./split_raw_prereq_str";
 import * as courses from '../../data/json/raw/courses.json';
-import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req } from './prereq_section_helpers'
+import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req, parse_spec_req } from './prereq_section_helpers'
 
 export type Prereq = {
   equivalent_courses: string[];
@@ -15,6 +15,7 @@ export type Prereq = {
     wam?: number;
     subject?: string;
     level?: number;
+    specialisations?: string[];
     programs?: string[];
     corequisites?: string[];
     all_found_courses?: string[];
@@ -37,7 +38,7 @@ const process_prereq = (prereq_str: string, exclusion_courses: string[], equival
   //console.log(clean_string(misc_section));
 
   prereq_obj = process_preq_section(prereq_section, prereq_obj);
-  //process_creq_section(coreq_section);
+  // prereq_obj = process_creq_section(coreq_section, prereq_obj);
   prereq_obj.exclusion_courses = process_excl_section(excl_section, exclusion_courses);
   prereq_obj.equivalent_courses = process_equiv_section(equiv_section, equivalent_courses);
   //if (prereq_obj.exclusion_courses.length > 0 || prereq_obj.equivalent_courses.length > 0) {
@@ -81,12 +82,15 @@ const process_preq_section = (preq_section: string, prereq_obj: Prereq): Prereq 
   if (prog_arr.length > 0) {
     prereq_obj.other_requirements.programs = prog_arr;
   }
-  //console.log(JSON.stringify(prereq_obj, null, 2))
+
+  prereq_obj = parse_spec_req(preq_str, prereq_obj);
+
   return prereq_obj;
 }
 
-const process_creq_section = (creq_str: string): void => {
-  return;
+const process_creq_section = (creq_str: string, prereq_obj: Prereq): Prereq => {
+  if (creq_str === "") return prereq_obj;
+  return prereq_obj;
 }
 
 // get course list, check if they are in courses.json, 

@@ -41,6 +41,7 @@ export type ProcessedCourse = {
     wam?: number;
     subject?: string;
     level?: number;
+    specialisations?: string[];
     programs?: string[];
     corequisites?: string[];
     all_found_courses?: string[];

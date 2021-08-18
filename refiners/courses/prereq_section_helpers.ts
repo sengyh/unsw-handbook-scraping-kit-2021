@@ -1,6 +1,8 @@
+import * as specialisations from '../../data/json/raw/specialisations.json';
 import * as programs from '../../data/json/raw/programs.json';
 import * as ddegs from '../../data/json/raw/double_degrees.json';
 import * as _ from "lodash";
+import { Prereq } from './process_prereqs';
 
 // HELPERS
 // extract wam req: 16 back, 11 front
@@ -62,4 +64,31 @@ export const parse_prog_req = (preq_str: string): string[] => {
     req_progs = compiled_progs.filter(code => code in programs || code in ddegs);
   }
   return req_progs;
+}
+
+export const parse_spec_req = (preq_str: string, prereq_obj: Prereq): Prereq => {
+  if (preq_str === "") return prereq_obj;
+  const spec_prog_pattern: RegExp = /([A-Z]{5}[0-9A-Z]{1})([0-9]{4})?/gm;
+  const spec_progs = Array.from(preq_str.matchAll(spec_prog_pattern), spcode => _.trim(spcode[0], ' ,()'));
+  let specs: string[] = [];
+  if (preq_str.match(/[,(. ]not[ ),.]/gm) === null) {
+    spec_progs.forEach(spec => {
+      const prog_match = spec.match(/[0-9]{4}$/gm);
+      // returns valid program code
+      if (prog_match && prog_match[0] in programs) {
+        const prog: string = prog_match[0];
+        if ('programs' in prereq_obj.other_requirements && !prereq_obj.other_requirements.programs?.includes(prog)) {
+          prereq_obj.other_requirements.programs?.push(prog);
+        } else {
+          prereq_obj.other_requirements.programs = [prog];
+        }
+      }
+      const spec_code: string = spec.replace(spec_prog_pattern, '$1');
+      if (spec_code in specialisations && !specs.includes(spec_code)) {
+        specs.push(spec_code);
+      }
+    });
+    if (specs.length > 0) prereq_obj.other_requirements.specialisations = specs;
+  }
+  return prereq_obj;
 }
