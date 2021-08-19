@@ -13,14 +13,13 @@ import * as fs from "fs";
 const process_course = (): void => {
   for (let [key, val] of Object.entries(courses)) {
     if (key === 'default') continue;
-    console.log(key)
     const code: string = key;
     const attr: Course = val;
     const subject: string = extract_subject(code);
     const level: number = extract_level(code);
     const terms: string[] = process_offering_terms(attr['offering_terms'], attr['academic_calendar']);
     const uoc: number = process_uoc(attr['uoc']);  
-    const prereq_obj: Prereq = process_prereq(attr['prereqs'], attr['exclusion_courses'], attr['equivalent_courses']);
+    const prereq_obj: Prereq = process_prereq(attr['prereqs'], key, attr['exclusion_courses'], attr['equivalent_courses']);
   }
   return;
 }

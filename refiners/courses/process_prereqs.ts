@@ -24,8 +24,9 @@ export type Prereq = {
   };
 }
 
-const process_prereq = (prereq_str: string, exclusion_courses: string[], equivalent_courses: string[]): Prereq => {
-  let prereq_obj: Prereq = initialise_prereq_obj(prereq_str, exclusion_courses, equivalent_courses)
+const process_prereq = (prereq_str: string, curr_course: string, exclusion_courses: string[], equivalent_courses: string[]): Prereq => {
+  let prereq_obj: Prereq = initialise_prereq_obj(prereq_str, exclusion_courses, equivalent_courses);
+  //console.log(curr_course);
   if (prereq_str === 'None' || prereq_str === '') {
     //console.log(JSON.stringify(prereq_obj, null, 2))
     return prereq_obj;
@@ -37,27 +38,37 @@ const process_prereq = (prereq_str: string, exclusion_courses: string[], equival
   //console.log(clean_string(equiv_section));
   //console.log(clean_string(misc_section));
 
-  prereq_obj = process_preq_section(prereq_section, prereq_obj);
+  prereq_obj = process_preq_section(prereq_section, curr_course, prereq_obj);
   // prereq_obj = process_creq_section(coreq_section, prereq_obj);
   prereq_obj.exclusion_courses = process_excl_section(excl_section, exclusion_courses);
   prereq_obj.equivalent_courses = process_equiv_section(equiv_section, equivalent_courses);
-  //if (prereq_obj.exclusion_courses.length > 0 || prereq_obj.equivalent_courses.length > 0) {
-  //  console.log(JSON.stringify(prereq_obj, null, 2));
-  //}
-  console.log(JSON.stringify(prereq_obj, null, 2));
+
+  //console.log(JSON.stringify(prereq_obj, null, 2));
   return prereq_obj;
 }
 
-const process_preq_section = (preq_section: string, prereq_obj: Prereq): Prereq => {
+const process_preq_section = (preq_section: string, curr_course: string, prereq_obj: Prereq): Prereq => {
   const preq_str = clean_string(preq_section);
   // maybe get all found codes into an all list, use this to fill unlocks
-  // ci: boolean expression
-  //process.stdout.write(preq_str + ' -');
-  let course_group = preq_str.match(/[\[(]*[a-z]{4}[0-9]{4}.*[a-z]{4}[0-9]{4}[\])]*/gmi);
-  //course_group?.forEach(str => console.log(str));
+  let course_group_pattern: RegExp = /([a-z]{4}\/)*[\[(]*[a-z]{4}?[0-9]{4}.*[ /(,][a-z]{4}[0-9]{4}[\])]*(\/\d{4})*/gmi;
+  let course_group_match = preq_str.match(course_group_pattern);
+  // either has multiple courses in prereq, just one or none at all
+  if (course_group_match) {
+    //process.stdout.write(curr_course + ': \t');
+    //course_group?.forEach(str => console.log(str));
+    let course_group: string = course_group_match[0];
+    course_group = clean_course_group_str(course_group);
+    //console.log(course_group)
+  } else {
+    // check for one course
+  }
+  
   // only one course group
   // if no course group, check for individual course
 
+
+  // note to self: everything below is pretty much a done deal
+  // do not return for your sanity
   let wam_str = parse_wam_req(preq_str);
   if (wam_str !== "") {
     const wam_req: number = parseInt(wam_str);
@@ -82,9 +93,7 @@ const process_preq_section = (preq_section: string, prereq_obj: Prereq): Prereq 
   if (prog_arr.length > 0) {
     prereq_obj.other_requirements.programs = prog_arr;
   }
-
   prereq_obj = parse_spec_req(preq_str, prereq_obj);
-
   return prereq_obj;
 }
 
@@ -140,6 +149,36 @@ const initialise_prereq_obj = (prereq_str: string, exclusion_courses: string[], 
   if (prereq_str === "None" || prereq_str === "") return prereq_obj 
   if (prereq_str !== "") prereq_obj.other_requirements.raw_str = prereq_str;
   return prereq_obj;
+}
+
+const clean_course_group_str = (cgroup_str: string): string => {
+  cgroup_str = cgroup_str.replace(/ (and)([a-z0-9])/gmi, ' $1 $2');
+  cgroup_str = cgroup_str.replace(/(and)\/(or)/gmi, '$2');
+  cgroup_str = cgroup_str.replace(/\. Highly recommended.*/gmi, '');
+  cgroup_str = cgroup_str.replaceAll(/[,.] *(and|or)[,.]?/gmi, ' $1 ');
+  cgroup_str = cgroup_str.replaceAll(/ ,/gmi, ',');
+  cgroup_str = cgroup_str.replaceAll(/&/gmi, 'and');
+  cgroup_str = cgroup_str.replaceAll(/\[/gmi, '(');
+  cgroup_str = cgroup_str.replaceAll(/\]/gmi, ')');
+  cgroup_str = cgroup_str.replaceAll(/;/gmi, ' and ');
+  cgroup_str = cgroup_str.replaceAll(/([A-Z]{4}) ([0-9]{4})/gm, '$1$2');
+  cgroup_str = cgroup_str.replaceAll(/ \)/gm, ')');
+  // curr: / and|[( ]or|(([a-z]{4}\/)?[\[\(]?[a-z]{4}[0-9]{4}[\),\]]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi
+  const tokenise: RegExp = / and|[( ]or|(([a-z]{4}\/)?[\[\(]?[a-z]{4}[0-9]{4}[\),\]]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi;
+  const match_str_tokens: string[] = Array.from(cgroup_str.matchAll(tokenise), token => token[0].toUpperCase());
+  const new_cgs: string = match_str_tokens.join(' ').replaceAll(/ {2,}/gm, ' ');
+  console.log(cgroup_str + '\n' + new_cgs + '\n')
+
+  // if there is case where (or|and) is followed by (or|and), pick latter
+
+  //console.log(cgroup_str)
+  return cgroup_str;
+}
+
+const parse_course_slashes = (cgroup_str: string): string => {
+  // filter cases with slashes but no sub code included, fill in code
+  // /([a-z]{4}[0-9]{4})(\/[0-9]{4})+/gmi
+  return "";
 }
 
 export default process_prereq;
