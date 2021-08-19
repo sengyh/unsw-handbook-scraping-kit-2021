@@ -164,22 +164,42 @@ const clean_course_group_str = (cgroup_str: string): string => {
   cgroup_str = cgroup_str.replaceAll(/([A-Z]{4}) ([0-9]{4})/gm, '$1$2');
   cgroup_str = cgroup_str.replaceAll(/ \)/gm, ')');
   // curr: / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi
+  // extract courses and boolean values
   const tokenise: RegExp = / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi;
-  const match_str_tokens: string[] = Array.from(cgroup_str.matchAll(tokenise), token => token[0].toUpperCase());
+  const match_str_tokens: string[] = Array.from(cgroup_str.matchAll(tokenise), token => parse_token(token[0]));
   let new_cgs: string = match_str_tokens.join(' ').replaceAll(/ {2,}/gm, ' ');
-  new_cgs = new_cgs.replaceAll(/\) \(/gm, '), (')
+  new_cgs = new_cgs.replaceAll(/\) \(/gm, '), (');
+  new_cgs = new_cgs.replaceAll(/([A-Z]{4}\d{4}) ([A-Z]{4}\d{4})/gm, '$1, $2')
   console.log(new_cgs)
 
   // if there is case where (or|and) is followed by (or|and), pick latter
+  // filter excess stuff: /(AND |OR ){1,}(AND |OR )/gm
 
   //console.log(cgroup_str)
   return cgroup_str;
 }
 
-const parse_course_slashes = (cgroup_str: string): string => {
+const parse_token = (token: string): string => {
   // filter cases with slashes but no sub code included, fill in code
   // /([a-z]{4}[0-9]{4})(\/[0-9]{4})+/gmi
-  return "";
+  const no_sub_pattern: RegExp = /([a-z]{4})[0-9]{4}(\/[0-9]{4})+/gmi;
+  const no_sub_match = token.match(no_sub_pattern);
+  const no_num_pattern: RegExp = /([a-z]{4}\/)+([a-z]{4}[0-9]{4})/gmi;
+  const no_num_match = token.match(no_num_pattern);
+  if (no_sub_match) {
+    let sub_slash_str: string = no_sub_match[0];
+    const sub_code: string = sub_slash_str.slice(0,4);
+    sub_slash_str = sub_slash_str.slice(4,sub_slash_str.length)
+    let sslash_arr: string[] = sub_slash_str.split('/').map(str => sub_code + str);
+    token = sslash_arr.join(' or ');
+  } else if (no_num_match) {
+    let num_slash_str: string = no_num_match[0];
+    const num: string = num_slash_str.slice(-4, num_slash_str.length);
+    num_slash_str = num_slash_str.slice(0, num_slash_str.length - 4);
+    let nslash_arr: string[] = num_slash_str.split('/').map(str => str + num);
+    token = nslash_arr.join(' or ');
+  }
+  return token.toUpperCase();
 }
 
 export default process_prereq;
