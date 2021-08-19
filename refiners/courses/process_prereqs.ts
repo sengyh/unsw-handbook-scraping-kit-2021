@@ -163,11 +163,12 @@ const clean_course_group_str = (cgroup_str: string): string => {
   cgroup_str = cgroup_str.replaceAll(/;/gmi, ' and ');
   cgroup_str = cgroup_str.replaceAll(/([A-Z]{4}) ([0-9]{4})/gm, '$1$2');
   cgroup_str = cgroup_str.replaceAll(/ \)/gm, ')');
-  // curr: / and|[( ]or|(([a-z]{4}\/)?[\[\(]?[a-z]{4}[0-9]{4}[\),\]]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi
-  const tokenise: RegExp = / and|[( ]or|(([a-z]{4}\/)?[\[\(]?[a-z]{4}[0-9]{4}[\),\]]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi;
+  // curr: / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi
+  const tokenise: RegExp = / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi;
   const match_str_tokens: string[] = Array.from(cgroup_str.matchAll(tokenise), token => token[0].toUpperCase());
-  const new_cgs: string = match_str_tokens.join(' ').replaceAll(/ {2,}/gm, ' ');
-  console.log(cgroup_str + '\n' + new_cgs + '\n')
+  let new_cgs: string = match_str_tokens.join(' ').replaceAll(/ {2,}/gm, ' ');
+  new_cgs = new_cgs.replaceAll(/\) \(/gm, '), (')
+  console.log(new_cgs)
 
   // if there is case where (or|and) is followed by (or|and), pick latter
 
