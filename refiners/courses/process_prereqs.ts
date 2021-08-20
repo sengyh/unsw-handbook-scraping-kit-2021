@@ -3,7 +3,8 @@ import { parse } from "path/posix";
 import { start } from "repl";
 import split_raw_prereq_str from "./split_raw_prereq_str";
 import * as courses from '../../data/json/raw/courses.json';
-import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req, parse_spec_req, clean_course_group_str, find_all_valid_courses_from_cg } from './prereq_section_helpers'
+import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req, parse_spec_req, clean_course_group_str, find_all_valid_courses_from_cg, construct_unlocked_by_arr, replace_with_bool_symbols} from './prereq_section_helpers'
+import { replace } from "lodash";
 
 export type Prereq = {
   equivalent_courses: string[];
@@ -57,9 +58,14 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
     let course_group: string = course_group_match[0];
     // heavily processed course_group, removed inconsistensies, tokenised and interpreted (implied) course relationships 
     course_group = clean_course_group_str(course_group);
-    //console.log(course_group)
+    // NOTE: use all_valid_courses to build 'unlocks' attribute
     const all_valid_courses: string[] = find_all_valid_courses_from_cg(course_group);
     prereq_obj.other_requirements.all_found_courses = all_valid_courses;
+    // time for the fucked up bit
+    // create course group boolean expression, swap 'AND' and 'OR' with respective symbols
+    let cg_bool_str: string = replace_with_bool_symbols(course_group);
+    //console.log(cg_bool_str)
+    const unlocked_by_prereqs: string[] = construct_unlocked_by_arr(course_group);
     
   } else {
     // check non course group prereq strs for existence of one course
@@ -69,7 +75,7 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
     const one_course_match = preq_str.match(one_course_filter)
     if (one_course_match){
       const one_prereq: string = _.trim(one_course_match[0], ' -,()').toUpperCase();
-      console.log(one_prereq)
+      //console.log(one_prereq)
       prereq_obj.unlocked_by = [one_prereq];
       if (one_prereq in courses) prereq_obj.other_requirements.all_found_courses = [one_prereq];
     }

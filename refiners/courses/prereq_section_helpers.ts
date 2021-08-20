@@ -149,3 +149,26 @@ export const find_all_valid_courses_from_cg = (course_group: string): string[] =
   const all_valid_courses: string[] = all_course_matches.filter(course => course in courses);
   return all_valid_courses;
 }
+
+export const construct_unlocked_by_arr = (cgroup_str: string): string[] => {
+  let unlocked_by: string[] = [];
+  console.log(cgroup_str);
+  const and_inside_brackets: RegExp = /\(.*[^\)] AND [^\(].*\)/gm;
+  if (cgroup_str.match(and_inside_brackets)) {
+    // console.log('fuck this shit im out');
+    unlocked_by = [replace_with_bool_symbols(cgroup_str)];
+  } else {
+    // has a chance to actually be interpreted right
+    // split string into arr with ' AND ' as delimiter
+    unlocked_by = cgroup_str.split(' AND ').map(elem => elem.replaceAll(/ OR /gm, ' | ').replaceAll(/[\(\)]/gm, ''));
+  }
+  console.log(unlocked_by)
+  console.log('\n')
+  return unlocked_by;
+}
+
+export const replace_with_bool_symbols = (course_group:string): string => {
+  let cg_bool_str: string = course_group.replaceAll(/ OR /gm, ' || ');
+  cg_bool_str = cg_bool_str.replaceAll(/ AND /gm, ' && ');
+  return cg_bool_str;
+}
