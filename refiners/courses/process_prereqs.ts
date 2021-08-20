@@ -3,7 +3,7 @@ import { parse } from "path/posix";
 import { start } from "repl";
 import split_raw_prereq_str from "./split_raw_prereq_str";
 import * as courses from '../../data/json/raw/courses.json';
-import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req, parse_spec_req } from './prereq_section_helpers'
+import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req, parse_spec_req, clean_course_group_str, find_all_valid_courses_from_cg } from './prereq_section_helpers'
 
 export type Prereq = {
   equivalent_courses: string[];
@@ -54,11 +54,13 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
   let course_group_match = preq_str.match(course_group_pattern);
   // either has multiple courses in prereq, just one or none at all
   if (course_group_match) {
-    //process.stdout.write(curr_course + ': \t');
-    //course_group?.forEach(str => console.log(str));
     let course_group: string = course_group_match[0];
+    // heavily processed course_group, removed inconsistensies, tokenised and interpreted (implied) course relationships 
     course_group = clean_course_group_str(course_group);
     //console.log(course_group)
+    const all_valid_courses: string[] = find_all_valid_courses_from_cg(course_group);
+    prereq_obj.other_requirements.all_found_courses = all_valid_courses;
+    
   } else {
     // check for one course
   }
@@ -149,57 +151,6 @@ const initialise_prereq_obj = (prereq_str: string, exclusion_courses: string[], 
   if (prereq_str === "None" || prereq_str === "") return prereq_obj 
   if (prereq_str !== "") prereq_obj.other_requirements.raw_str = prereq_str;
   return prereq_obj;
-}
-
-const clean_course_group_str = (cgroup_str: string): string => {
-  cgroup_str = cgroup_str.replace(/ (and)([a-z0-9])/gmi, ' $1 $2');
-  cgroup_str = cgroup_str.replace(/(and)\/(or)/gmi, '$2');
-  cgroup_str = cgroup_str.replace(/\. Highly recommended.*/gmi, '');
-  cgroup_str = cgroup_str.replaceAll(/[,.] *(and|or)[,.]?/gmi, ' $1 ');
-  cgroup_str = cgroup_str.replaceAll(/ ,/gmi, ',');
-  cgroup_str = cgroup_str.replaceAll(/&/gmi, 'and');
-  cgroup_str = cgroup_str.replaceAll(/\[/gmi, '(');
-  cgroup_str = cgroup_str.replaceAll(/\]/gmi, ')');
-  cgroup_str = cgroup_str.replaceAll(/;/gmi, ' and ');
-  cgroup_str = cgroup_str.replaceAll(/([A-Z]{4}) ([0-9]{4})/gm, '$1$2');
-  cgroup_str = cgroup_str.replaceAll(/ \)/gm, ')');
-  // curr: / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi
-  // extract courses and boolean values
-  const tokenise: RegExp = / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi;
-  const match_str_tokens: string[] = Array.from(cgroup_str.matchAll(tokenise), token => parse_token(token[0]));
-  let new_cgs: string = match_str_tokens.join(' ').replaceAll(/ {2,}/gm, ' ');
-  new_cgs = new_cgs.replaceAll(/\) \(/gm, '), (');
-  new_cgs = new_cgs.replaceAll(/([A-Z]{4}\d{4}) ([A-Z]{4}\d{4})/gm, '$1, $2')
-  console.log(new_cgs)
-
-  // if there is case where (or|and) is followed by (or|and), pick latter
-  // filter excess stuff: /(AND |OR ){1,}(AND |OR )/gm
-
-  //console.log(cgroup_str)
-  return cgroup_str;
-}
-
-const parse_token = (token: string): string => {
-  // filter cases with slashes but no sub code included, fill in code
-  // /([a-z]{4}[0-9]{4})(\/[0-9]{4})+/gmi
-  const no_sub_pattern: RegExp = /([a-z]{4})[0-9]{4}(\/[0-9]{4})+/gmi;
-  const no_sub_match = token.match(no_sub_pattern);
-  const no_num_pattern: RegExp = /([a-z]{4}\/)+([a-z]{4}[0-9]{4})/gmi;
-  const no_num_match = token.match(no_num_pattern);
-  if (no_sub_match) {
-    let sub_slash_str: string = no_sub_match[0];
-    const sub_code: string = sub_slash_str.slice(0,4);
-    sub_slash_str = sub_slash_str.slice(4,sub_slash_str.length)
-    let sslash_arr: string[] = sub_slash_str.split('/').map(str => sub_code + str);
-    token = sslash_arr.join(' or ');
-  } else if (no_num_match) {
-    let num_slash_str: string = no_num_match[0];
-    const num: string = num_slash_str.slice(-4, num_slash_str.length);
-    num_slash_str = num_slash_str.slice(0, num_slash_str.length - 4);
-    let nslash_arr: string[] = num_slash_str.split('/').map(str => str + num);
-    token = nslash_arr.join(' or ');
-  }
-  return token.toUpperCase();
 }
 
 export default process_prereq;

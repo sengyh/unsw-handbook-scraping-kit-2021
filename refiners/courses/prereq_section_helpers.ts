@@ -1,6 +1,7 @@
 import * as specialisations from '../../data/json/raw/specialisations.json';
 import * as programs from '../../data/json/raw/programs.json';
 import * as ddegs from '../../data/json/raw/double_degrees.json';
+import * as courses from '../../data/json/raw/courses.json';
 import * as _ from "lodash";
 import { Prereq } from './process_prereqs';
 
@@ -91,4 +92,60 @@ export const parse_spec_req = (preq_str: string, prereq_obj: Prereq): Prereq => 
     if (specs.length > 0) prereq_obj.other_requirements.specialisations = specs;
   }
   return prereq_obj;
+}
+
+export const clean_course_group_str = (cgroup_str: string): string => {
+  cgroup_str = cgroup_str.replace(/ (and)([a-z0-9])/gmi, ' $1 $2');
+  cgroup_str = cgroup_str.replace(/(and)\/(or)/gmi, '$2');
+  cgroup_str = cgroup_str.replace(/\. Highly recommended.*/gmi, '');
+  cgroup_str = cgroup_str.replaceAll(/[,.] *(and|or)[,.]?/gmi, ' $1 ');
+  cgroup_str = cgroup_str.replaceAll(/ ,/gmi, ',');
+  cgroup_str = cgroup_str.replaceAll(/&/gmi, 'and');
+  cgroup_str = cgroup_str.replaceAll(/\[/gmi, '(');
+  cgroup_str = cgroup_str.replaceAll(/\]/gmi, ')');
+  cgroup_str = cgroup_str.replaceAll(/;/gmi, ' and ');
+  cgroup_str = cgroup_str.replaceAll(/([A-Z]{4}) ([0-9]{4})/gm, '$1$2');
+  cgroup_str = cgroup_str.replaceAll(/ \)/gm, ')');
+  // extract courses and boolean values
+  const tokenise: RegExp = / and|[( ]or|(([a-z]{4}\/)?[\(]?[a-z]{4}[0-9]{4}[\),]?)(([/][0-9]{4}[,]?)+|)|[&/]/gmi;
+  const match_str_tokens: string[] = Array.from(cgroup_str.matchAll(tokenise), token => parse_token(token[0]));
+  let new_cgs: string = match_str_tokens.join(' ').replaceAll(/ {2,}/gm, ' ');
+  new_cgs = new_cgs.replaceAll(/\) \(/gm, '), (');
+  new_cgs = new_cgs.replaceAll(/([A-Z]{4}\d{4}) ([A-Z]{4}\d{4})/gm, '$1, $2');
+  new_cgs = new_cgs.replaceAll('\/', 'OR');
+  new_cgs = new_cgs.replace(/(AND |OR )+(AND |OR )/gm, '$2');
+  // this bit is where the hardest course groups turn to complete inaccurate schlock
+  // too exhausted to give a flying fuck about this anymore
+  new_cgs = new_cgs.replaceAll(/, /gmi, ' AND ');
+  return new_cgs;
+}
+
+const parse_token = (token: string): string => {
+  // filter cases with slashes but no sub code included, fill in code
+  // /([a-z]{4}[0-9]{4})(\/[0-9]{4})+/gmi
+  const no_sub_pattern: RegExp = /([a-z]{4})[0-9]{4}(\/[0-9]{4})+/gmi;
+  const no_sub_match = token.match(no_sub_pattern);
+  const no_num_pattern: RegExp = /([a-z]{4}\/)+([a-z]{4}[0-9]{4})/gmi;
+  const no_num_match = token.match(no_num_pattern);
+  if (no_sub_match) {
+    let sub_slash_str: string = no_sub_match[0];
+    const sub_code: string = sub_slash_str.slice(0,4);
+    sub_slash_str = sub_slash_str.slice(4,sub_slash_str.length)
+    let sslash_arr: string[] = sub_slash_str.split('/').map(str => sub_code + str);
+    token = sslash_arr.join(' or ');
+  } else if (no_num_match) {
+    let num_slash_str: string = no_num_match[0];
+    const num: string = num_slash_str.slice(-4, num_slash_str.length);
+    num_slash_str = num_slash_str.slice(0, num_slash_str.length - 4);
+    let nslash_arr: string[] = num_slash_str.split('/').map(str => str + num);
+    token = nslash_arr.join(' or ');
+  }
+  return token.toUpperCase();
+}
+
+export const find_all_valid_courses_from_cg = (course_group: string): string[] => {
+  const course_pattern: RegExp = /[A-Z]{4}[0-9]{4}/gm;
+  const all_course_matches: string[] = Array.from(course_group.matchAll(course_pattern), course => course[0]);
+  const all_valid_courses: string[] = all_course_matches.filter(course => course in courses);
+  return all_valid_courses;
 }
