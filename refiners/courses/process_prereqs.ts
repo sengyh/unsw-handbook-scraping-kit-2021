@@ -62,12 +62,18 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
     prereq_obj.other_requirements.all_found_courses = all_valid_courses;
     
   } else {
-    // check for one course
+    // check non course group prereq strs for existence of one course
+      // if found assign to unlocked_by attr
+      // also check if course is currently offered before inserting into all_found_courses
+    const one_course_filter: RegExp = /(^[a-z]{4}[0-9]{4})| [\(]?([a-z]{4}[0-9]{4})[-,\)]?| ([a-z]{4}[0-9]{4})$/gmi;
+    const one_course_match = preq_str.match(one_course_filter)
+    if (one_course_match){
+      const one_prereq: string = _.trim(one_course_match[0], ' -,()').toUpperCase();
+      console.log(one_prereq)
+      prereq_obj.unlocked_by = [one_prereq];
+      if (one_prereq in courses) prereq_obj.other_requirements.all_found_courses = [one_prereq];
+    }
   }
-  
-  // only one course group
-  // if no course group, check for individual course
-
 
   // note to self: everything below is pretty much a done deal
   // do not return for your sanity
