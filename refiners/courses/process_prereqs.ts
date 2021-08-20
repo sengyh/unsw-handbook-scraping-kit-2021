@@ -61,6 +61,7 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
 
     const unlocked_by_prereqs: string[] = construct_unlocked_by_arr(course_group); 
     prereq_obj.unlocked_by = unlocked_by_prereqs;
+    console.log(unlocked_by_prereqs)
 
   } else {
     // check non course group prereq strs for existence of one course
@@ -109,10 +110,6 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
 
 const process_creq_section = (creq_section: string, prereq_obj: Prereq): Prereq => {
   if (creq_section === "") return prereq_obj;
-
-  //console.log(prereq_obj.other_requirements.raw_str);
-  //console.log(prereq_obj.other_requirements.all_found_courses);
-
   const creq_str = clean_string(creq_section);
   let course_group_pattern: RegExp = /([a-z]{4}\/)*[\[(]*[a-z]{4}?[0-9]{4}.*[ /(,][a-z]{4}[0-9]{4}[\])]*(\/\d{4})*/gmi;
   let course_group_match = creq_str.match(course_group_pattern);
@@ -157,10 +154,7 @@ const process_creq_section = (creq_section: string, prereq_obj: Prereq): Prereq 
       }
     }
   }
-  //console.log(prereq_obj.other_requirements.all_found_courses)
-  //console.log(prereq_obj.unlocked_by);
-  //console.log('\n\n')
-
+  //console.log(JSON.stringify(prereq_obj, null, 2));
   return prereq_obj;
 }
 
