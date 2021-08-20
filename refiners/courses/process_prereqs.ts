@@ -61,7 +61,6 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
 
     const unlocked_by_prereqs: string[] = construct_unlocked_by_arr(course_group); 
     prereq_obj.unlocked_by = unlocked_by_prereqs;
-    console.log(unlocked_by_prereqs)
 
   } else {
     // check non course group prereq strs for existence of one course
@@ -142,6 +141,7 @@ const process_creq_section = (creq_section: string, prereq_obj: Prereq): Prereq 
     if (one_course_match) {
       const one_coreq: string = _.trim(one_course_match[0], ' -,()').toUpperCase();
       if (one_coreq in courses) {
+        // maybe move this above the if statement???
         prereq_obj.other_requirements.corequisites = [one_coreq];
         // if single coreq course is not found in all_found_courses attribute, just insert into unlocked_by
         if (!prereq_obj.other_requirements.all_found_courses?.includes(one_coreq)) prereq_obj.unlocked_by.push(one_coreq + ' (c)');
