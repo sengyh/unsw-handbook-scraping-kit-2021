@@ -6,13 +6,16 @@ import * as _ from "lodash";
 import * as fs from "fs";
 
 const process_all_courses = (): void => {
+  let all_processed_courses: ProcessedCourses = {};
   for (let [key, val] of Object.entries(courses)) {
     if (key === 'default') continue;
     const code: string = key;
     const attr: Course = val;
     const processed_course: ProcessedCourse = construct_processed_course(code, attr);
-    console.log(JSON.stringify(processed_course, null, 2));
+    all_processed_courses = {...all_processed_courses, ...{[code]: processed_course}}
   }
+  const all_pcourses_json: string = JSON.stringify(all_processed_courses, null, 2);
+  fs.writeFileSync('../../data/json/refined_courses.json', all_pcourses_json);
   return;
 }
 
