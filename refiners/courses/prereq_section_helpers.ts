@@ -152,18 +152,18 @@ export const find_all_valid_courses_from_cg = (course_group: string): string[] =
 
 export const construct_unlocked_by_arr = (cgroup_str: string): string[] => {
   let unlocked_by: string[] = [];
-  console.log(cgroup_str);
+  //console.log(cgroup_str);
   const and_inside_brackets: RegExp = /\(.*[^\)] AND [^\(].*\)/gm;
   if (cgroup_str.match(and_inside_brackets)) {
     // console.log('fuck this shit im out');
-    unlocked_by = [replace_with_bool_symbols(cgroup_str)];
+    unlocked_by = [replace_with_bool_symbols(cgroup_str).replaceAll(/ \|\| /gm, ' | ').replaceAll(/ && /gm, ' & ').replaceAll(/ \(OR /gm, ' | (')];
   } else {
     // has a chance to actually be interpreted right
     // split string into arr with ' AND ' as delimiter
-    unlocked_by = cgroup_str.split(' AND ').map(elem => elem.replaceAll(/ OR /gm, ' | ').replaceAll(/[\(\)]/gm, ''));
+    unlocked_by = cgroup_str.split(' AND ').map(elem => elem.replaceAll(/ [\(]?OR /gm, ' | ').replaceAll(/[\(\)]/gm, ''));
   }
-  console.log(unlocked_by)
-  console.log('\n')
+  //console.log(unlocked_by)
+  //console.log('\n')
   return unlocked_by;
 }
 

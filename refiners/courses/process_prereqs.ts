@@ -28,19 +28,12 @@ export type Prereq = {
 const process_prereq = (prereq_str: string, curr_course: string, exclusion_courses: string[], equivalent_courses: string[]): Prereq => {
   let prereq_obj: Prereq = initialise_prereq_obj(prereq_str, exclusion_courses, equivalent_courses);
   //console.log(curr_course);
-  if (prereq_str === 'None' || prereq_str === '') {
-    //console.log(JSON.stringify(prereq_obj, null, 2))
-    return prereq_obj;
-  } 
+  if (prereq_str === 'None' || prereq_str === '') return prereq_obj;
+
   const [prereq_section, coreq_section, excl_section, equiv_section, misc_section]: string[] = split_raw_prereq_str(prereq_str);
-  //console.log(clean_string(prereq_section));
-  //console.log(clean_string(coreq_section));
-  //console.log(clean_string(excl_section));
-  //console.log(clean_string(equiv_section));
-  //console.log(clean_string(misc_section));
 
   prereq_obj = process_preq_section(prereq_section, curr_course, prereq_obj);
-  // prereq_obj = process_creq_section(coreq_section, prereq_obj);
+  prereq_obj = process_creq_section(coreq_section, prereq_obj);
   prereq_obj.exclusion_courses = process_excl_section(excl_section, exclusion_courses);
   prereq_obj.equivalent_courses = process_equiv_section(equiv_section, equivalent_courses);
 
@@ -64,9 +57,11 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
     // time for the fucked up bit
     // create course group boolean expression, swap 'AND' and 'OR' with respective symbols
     let cg_bool_str: string = replace_with_bool_symbols(course_group);
-    //console.log(cg_bool_str)
-    const unlocked_by_prereqs: string[] = construct_unlocked_by_arr(course_group);
-    
+    prereq_obj.other_requirements.course_group_boolean = cg_bool_str;
+
+    const unlocked_by_prereqs: string[] = construct_unlocked_by_arr(course_group); 
+    prereq_obj.unlocked_by = unlocked_by_prereqs;
+
   } else {
     // check non course group prereq strs for existence of one course
       // if found assign to unlocked_by attr
@@ -75,9 +70,10 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
     const one_course_match = preq_str.match(one_course_filter)
     if (one_course_match){
       const one_prereq: string = _.trim(one_course_match[0], ' -,()').toUpperCase();
-      //console.log(one_prereq)
-      prereq_obj.unlocked_by = [one_prereq];
-      if (one_prereq in courses) prereq_obj.other_requirements.all_found_courses = [one_prereq];
+      if (one_prereq in courses) {
+        prereq_obj.unlocked_by = [one_prereq];
+        prereq_obj.other_requirements.all_found_courses = [one_prereq];
+      }
     }
   }
 
@@ -111,8 +107,60 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
   return prereq_obj;
 }
 
-const process_creq_section = (creq_str: string, prereq_obj: Prereq): Prereq => {
-  if (creq_str === "") return prereq_obj;
+const process_creq_section = (creq_section: string, prereq_obj: Prereq): Prereq => {
+  if (creq_section === "") return prereq_obj;
+
+  //console.log(prereq_obj.other_requirements.raw_str);
+  //console.log(prereq_obj.other_requirements.all_found_courses);
+
+  const creq_str = clean_string(creq_section);
+  let course_group_pattern: RegExp = /([a-z]{4}\/)*[\[(]*[a-z]{4}?[0-9]{4}.*[ /(,][a-z]{4}[0-9]{4}[\])]*(\/\d{4})*/gmi;
+  let course_group_match = creq_str.match(course_group_pattern);
+  // check if there is a 'course group' (>=2 courses)
+  if (course_group_match) {
+    let course_group: string = course_group_match[0];
+    course_group = clean_course_group_str(course_group);
+    // todo: first check the coreq array with existing all_found_courses attribute, see if there are clashing attributes
+      // if there are, pop from coreq array
+    const unlocked_by_coreqs: string[] = construct_unlocked_by_arr(course_group); 
+    const ub_coreqs_w_c: string[] = unlocked_by_coreqs.map(str => str + ' (c)');
+    prereq_obj.other_requirements.corequisites = unlocked_by_coreqs;
+    prereq_obj.unlocked_by = prereq_obj.unlocked_by.concat(ub_coreqs_w_c);
+
+    const all_valid_courses: string[] = find_all_valid_courses_from_cg(course_group);
+    if ('all_found_courses' in prereq_obj.other_requirements) {
+      // iterate course group, insert if not already in array
+      all_valid_courses.forEach(course => {
+        if (!prereq_obj.other_requirements.all_found_courses?.includes(course)) {
+          prereq_obj.other_requirements.all_found_courses?.push(course);
+        }
+      });
+    } else {
+      prereq_obj.other_requirements.all_found_courses = all_valid_courses;
+    }
+  } else {
+    // one course only
+    const one_course_filter: RegExp = /(^[a-z]{4}[0-9]{4})| [\(]?([a-z]{4}[0-9]{4})[-,\)]?| ([a-z]{4}[0-9]{4})$/gmi;
+    const one_course_match = creq_str.match(one_course_filter);
+    if (one_course_match) {
+      const one_coreq: string = _.trim(one_course_match[0], ' -,()').toUpperCase();
+      if (one_coreq in courses) {
+        prereq_obj.other_requirements.corequisites = [one_coreq];
+        // if single coreq course is not found in all_found_courses attribute, just insert into unlocked_by
+        if (!prereq_obj.other_requirements.all_found_courses?.includes(one_coreq)) prereq_obj.unlocked_by.push(one_coreq + ' (c)');
+        // insert single coreq course into all_found_courses if not found
+        if ('all_found_courses' in prereq_obj.other_requirements) {
+          if (!prereq_obj.other_requirements.all_found_courses?.includes(one_coreq)) prereq_obj.other_requirements.all_found_courses?.push(one_coreq);
+        } else {
+          prereq_obj.other_requirements.all_found_courses = [one_coreq];
+        }
+      }
+    }
+  }
+  //console.log(prereq_obj.other_requirements.all_found_courses)
+  //console.log(prereq_obj.unlocked_by);
+  //console.log('\n\n')
+
   return prereq_obj;
 }
 
