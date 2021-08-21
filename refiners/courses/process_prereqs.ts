@@ -56,7 +56,7 @@ const process_preq_section = (preq_section: string, curr_course: string, prereq_
     course_group = clean_course_group_str(course_group);
     // NOTE: use all_valid_courses to build 'unlocks' attribute
     const all_valid_courses: string[] = find_all_valid_courses_from_cg(course_group);
-    prereq_obj.other_requirements.all_found_courses = all_valid_courses;
+    if (all_valid_courses.length > 0) prereq_obj.other_requirements.all_found_courses = all_valid_courses;
     // time for the fucked up bit
     // create course group boolean expression, swap 'AND' and 'OR' with respective symbols
     let cg_bool_str: string = replace_with_bool_symbols(course_group);

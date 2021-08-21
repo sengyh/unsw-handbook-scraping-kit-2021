@@ -53,6 +53,25 @@ export type ProcessedCourse = {
   is_multi_term: boolean;
 };
 
+export type Prereq = {
+  equivalent_courses: string[];
+  exclusion_courses: string[]; 
+  unlocked_by: string[];
+  unlocks: string[];
+  other_requirements: {
+    uoc?: number;
+    wam?: number;
+    subject?: string;
+    level?: number;
+    specialisations?: string[];
+    programs?: string[];
+    corequisites?: string[];
+    all_found_courses?: string[];
+    course_group_boolean?: string;
+    raw_str?: string;
+  };
+}
+
 
 export type Subjects = Record<string, Subject>;
 export type Subject = {
