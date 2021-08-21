@@ -13,7 +13,9 @@ const fill_unlocks_attr = (): void => {
       const all_valid_prereq_courses: string[] | undefined = attr.other_requirements.all_found_courses;
       all_valid_prereq_courses?.forEach(course => {
         let prereq_unlocks_arr: string[] = all_processed_courses[course].unlocks;
-        if (!prereq_unlocks_arr.includes(course)) all_processed_courses[course].unlocks.push(curr_course_code);
+        if (!prereq_unlocks_arr.includes(course) && !all_processed_courses[course].exclusion_courses.includes(curr_course_code)) {
+          all_processed_courses[course].unlocks.push(curr_course_code);
+        }
       })
     }
   }
