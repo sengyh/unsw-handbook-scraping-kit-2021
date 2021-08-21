@@ -1,0 +1,11 @@
+what to do if you want to clean your scraped handbook data (and thanks if you are reading this and have gotten this far)
+- create a 'raw' folder inside your data/json directory and move all the scraped jsons in there
+- run  `npx ts-node homogenise_courses.ts`
+- run  `npx ts-node reformat_subject_json.ts`
+- run  `npx ts-node add_schools_to_faculty.ts`
+- run  `npx ts-node construct_school_json.ts`
+note: the previous 3 above can be run in any order, but it's important to homogenise courses first.
+- run  `npx ts-node process_courses.ts`
+- run  `npx ts-node fill_courses.ts`
+
+strongly considering writing a script to automate all of this, might come back to this after finishing cleaning up the rest of the jsons
