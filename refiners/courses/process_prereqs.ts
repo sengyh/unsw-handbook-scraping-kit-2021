@@ -3,6 +3,8 @@ import { parse } from "path/posix";
 import { start } from "repl";
 import split_raw_prereq_str from "./split_raw_prereq_str";
 import * as courses from '../../data/json/raw/courses.json';
+import * as programs from '../../data/json/raw/programs.json';
+import * as ddegs from '../../data/json/raw/double_degrees.json';
 import { parse_wam_req, parse_uoc_req, parse_lvl_req, parse_sub_req, parse_prog_req, parse_spec_req, clean_course_group_str, find_all_valid_courses_from_cg, construct_unlocked_by_arr, replace_with_bool_symbols} from './prereq_section_helpers'
 import { replace } from "lodash";
 
@@ -36,6 +38,7 @@ const process_prereq = (prereq_str: string, curr_course: string, exclusion_cours
   prereq_obj = process_creq_section(coreq_section, prereq_obj);
   prereq_obj.exclusion_courses = process_excl_section(excl_section, exclusion_courses);
   prereq_obj.equivalent_courses = process_equiv_section(equiv_section, equivalent_courses);
+  prereq_obj = process_misc_section(misc_section, prereq_obj);
 
   //console.log(JSON.stringify(prereq_obj, null, 2));
   return prereq_obj;
@@ -176,6 +179,20 @@ const process_equiv_section = (equiv_str: string, equivalent_courses: string[]):
     if (!equivalent_courses.includes(course)) equivalent_courses.push(course);
   })
   return equivalent_courses;
+}
+
+// so far, only important misc data are program codes, so i'm only filtering for that
+const process_misc_section = (misc_str: string, prereq_obj: Prereq): Prereq => {
+  if (misc_str === "") return prereq_obj;
+  const prog_code_pattern: RegExp = /[\( ]([0-9]{4})/gm;
+  const extracted_programs: string[] = Array.from(misc_str.matchAll(prog_code_pattern), prog => prog[0]).map(prog => _.trim(prog, '( '));
+  const filtered_progs: string[] = extracted_programs.filter(code => code in programs || code in ddegs);
+  if ('programs' in prereq_obj.other_requirements) {
+    prereq_obj.other_requirements.programs?.concat(extracted_programs);
+  } else {
+    if (extracted_programs.length > 0) prereq_obj.other_requirements.programs = extracted_programs;
+  }
+  return prereq_obj;
 }
 
 const compile_course_list = (cgroup_str: string, check_valid_course: boolean): string[] => {

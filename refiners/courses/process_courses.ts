@@ -15,7 +15,7 @@ const process_all_courses = (): void => {
     all_processed_courses = {...all_processed_courses, ...{[code]: processed_course}}
   }
   const all_pcourses_json: string = JSON.stringify(all_processed_courses, null, 2);
-  fs.writeFileSync('../../data/json/refined_courses.json', all_pcourses_json);
+  fs.writeFileSync('../../data/json/test_refined_courses.json', all_pcourses_json);
   return;
 }
 
