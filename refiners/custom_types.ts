@@ -72,6 +72,25 @@ export type Prereq = {
   };
 }
 
+export type ScrapedSpecialisations = Record<string, ScrapedSpecialisation>;
+export type ScrapedSpecialisation = {
+  name: string;
+  uoc: string;
+  overview: string;
+  available_in_programs: string[];
+  structure: SpecStructure;
+  faculty: string;
+  school?: string;
+  minimum_units_of_credit?: string;
+  specialisation_type: string;
+}
+export type SpecStructure = Record<string, SpecStructBody>;
+export type SpecStructBody = {
+  uoc: string;
+  description: string;
+  courses: string[];
+}
+
 
 export type Subjects = Record<string, Subject>;
 export type Subject = {

@@ -16,12 +16,12 @@ const fill_unlocks_attr = (): void => {
         if (!prereq_unlocks_arr.includes(course) && !all_processed_courses[course].exclusion_courses.includes(curr_course_code)) {
           all_processed_courses[course].unlocks.push(curr_course_code);
         }
-      })
+      });
     }
   }
   //console.log(all_processed_courses['FINS1613']);
   delete all_processed_courses['default'];
-  fs.writeFileSync('../../data/json/filled_unlocks.json', JSON.stringify(all_processed_courses, null, 2));
+  fs.writeFileSync('../../data/json/refined_courses.json', JSON.stringify(all_processed_courses, null, 2));
   return;
 }
 
