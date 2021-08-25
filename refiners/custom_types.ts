@@ -84,9 +84,38 @@ export type ScrapedSpecialisation = {
   minimum_units_of_credit?: string;
   specialisation_type: string;
 }
+export type Specialisations = Record<string, Specialisation>;
+export type Specialisation = {
+  name: string;
+  uoc: string;
+  overview: string;
+  available_in_programs: string[];
+  structure: SpecStructure;
+  faculty: string;
+  school: string;
+  minimum_units_of_credit: string;
+  specialisation_type: string;  
+}
 export type SpecStructure = Record<string, SpecStructBody>;
 export type SpecStructBody = {
   uoc: string;
+  description: string;
+  courses: string[];
+}
+export type ProcessedSpecialisations = Record<string, ProcessedSpecialisation>;
+export type ProcessedSpecialisation = {
+  name: string;
+  uoc: number;
+  specialisation_type: string;  
+  programs_available_in: string[];
+  overview: string;
+  structure: ProcessedStructBody[];
+  faculty: string;
+  school: string;
+}
+export type ProcessedStructBody = {
+  title: string;
+  uoc: string; // there could be a min-max range, not sure how else to represent it
   description: string;
   courses: string[];
 }
