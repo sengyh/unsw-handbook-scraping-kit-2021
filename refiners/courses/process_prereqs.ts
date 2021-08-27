@@ -47,7 +47,7 @@ const process_prereq = (prereq_str: string, curr_course: string, exclusion_cours
 const process_preq_section = (preq_section: string, curr_course: string, prereq_obj: Prereq): Prereq => {
   const preq_str = clean_string(preq_section);
   // maybe get all found codes into an all list, use this to fill unlocks
-  let course_group_pattern: RegExp = /([a-z]{4}\/)*[\[(]*[a-z]{4}?[0-9]{4}.*[ /(,][a-z]{4}[0-9]{4}[\])]*(\/\d{4})*/gmi;
+  let course_group_pattern: RegExp = /([a-z]{4}\/)*[\[(]*[a-z]{4}?[0-9]{4}.*[ \/(,][a-z]{4}[0-9]{4}[\])]*(\/\d{4})*/gmi;
   let course_group_match = preq_str.match(course_group_pattern);
   // either has multiple courses in prereq, just one or none at all
   if (course_group_match) {
