@@ -90,3 +90,53 @@ export const process_any_course_str = (any_course_str: string): string[] => {
 
   return [];
 }
+
+export const extract_min_uoc = (desc_str: string): string => {
+  const first_line: string = _.trim(desc_str, ' \n').split('\n')[0];
+  const min_uoc_pattern: RegExp = /must (take|complete)( a minimum of| at least)? [0-9]+ uoc/gmi;
+  let min_uoc: string = "";
+  const min_uoc_match = first_line.match(min_uoc_pattern);
+  if (!first_line.match(/^if/gmi) && min_uoc_match) {
+    min_uoc = min_uoc_match[0].replace(/[^\d]/gm, '');
+  }
+  return min_uoc;
+}
+
+export const extract_max_uoc = (desc_str: string): string => {
+  const first_line: string = _.trim(desc_str, ' \n').split('\n')[0];
+  const max_uoc_pattern: RegExp = /( up to| a maximum of) [0-9]+ uoc/gmi;
+  let max_uoc: string = "";
+  const max_uoc_match = first_line.match(max_uoc_pattern);
+  if (max_uoc_match) {
+    max_uoc = max_uoc_match[0].replace(/[^\d]/gm, '');
+  }
+  return max_uoc;
+}
+
+export const extract_uoc_range = (desc_str: string): string => {
+  let uoc_range: string = "";
+  const uoc_range_pattern: RegExp = / [0-9]+- ?[0-9]+ UOC/gmi;
+  const uoc_range_match = desc_str.match(uoc_range_pattern);
+  if (uoc_range_match) uoc_range = uoc_range_match[0].replaceAll(/[a-z ]/gmi, '');
+  return uoc_range;
+}
+
+export const get_new_uoc = (min_uoc: string, max_uoc: string): string => {
+  let new_uoc: string = "";
+  if (max_uoc !== "") {
+    if (min_uoc !== "" ) {
+      if (min_uoc === max_uoc) {
+        new_uoc = min_uoc;
+      } else {
+        new_uoc = min_uoc + '-' + max_uoc;
+      }     
+    } else {
+      new_uoc = '0-' + max_uoc;
+    }
+  } else {
+    if (min_uoc !== "") {
+      new_uoc = min_uoc;
+    }
+  }
+  return new_uoc;
+}

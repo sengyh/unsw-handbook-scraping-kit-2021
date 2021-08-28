@@ -114,7 +114,7 @@ export type ProcessedSpecialisation = {
   school: string;
 }
 export type ProcessedStructBody = {
-  title: string;
+  name: string;
   uoc: string; // there could be a min-max range, not sure how else to represent it
   description: string;
   courses: string[];
