@@ -1,4 +1,5 @@
 import * as schools from '../../data/json/schools.json';
+import * as subjects from '../../data/json/subjects.json';
 import * as sub_val_name from '../../data/json/name_to_code/subject_val_key.json';
 import type { SpecStructure, SpecStructBody, ProcessedStructBody, SubValKeyObj, Schools } from '../custom_types';
 import {clean_course_group_str, construct_unlocked_by_arr} from '../courses/prereq_section_helpers';
@@ -50,6 +51,8 @@ export const extract_all_found_courses = (body: SpecStructBody): string[] => {
 
 export const process_any_course_str = (any_course_str: string): string[] => {
   // any level X SUB course
+  // the design decision i made with sub_val (' | ' delimiter) will come back and bite me in the ass
+  // too lazy to fix this, will come back to this later
   const level_w_sub_pattern: RegExp = /^any (level [0-9]) ([a-z ]+).*course/gmi
   let level_arr: string[] = Array.from(any_course_str.matchAll(level_w_sub_pattern), m => m[1]);
   const sub_arr: string[] = Array.from(any_course_str.matchAll(level_w_sub_pattern), m => _.trim(m[2]));
@@ -58,6 +61,7 @@ export const process_any_course_str = (any_course_str: string): string[] => {
     const sv_name: SubValKeyObj = sub_val_name;
     const sub: string = sub_arr[0]
     if (sub in sv_name) {
+      // TODO: edge case: ' | ' delimiter, need to split and apply to every element if exists
       course_code += sv_name[sub];
       course_code += level_arr[0].replace(/level /gmi, '') + '___';
       return [course_code];

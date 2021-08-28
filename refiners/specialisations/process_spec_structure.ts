@@ -1,5 +1,5 @@
 import type { SpecStructure, SpecStructBody, ProcessedStructBody, OtherInfoElem, ProcStructObj } from '../custom_types';
-import { extract_all_found_courses, extract_min_uoc, extract_max_uoc, extract_uoc_range, get_new_uoc } from './spec_element_helper';
+import { extract_all_found_courses, process_any_course_str, extract_min_uoc, extract_max_uoc, extract_uoc_range, get_new_uoc } from './spec_element_helper';
 import * as _ from 'lodash';
 
 export const process_spec_structure = (spec_structure: SpecStructure): ProcStructObj => {
@@ -44,6 +44,17 @@ const construct_spec_element = (title: string, body: SpecStructBody): ProcessedS
     if (new_uoc === "") new_uoc = extract_uoc_range(new_body.description);
     new_body.uoc = new_uoc;
   }
+
+  let processed_course_arr: string[] = [];
+  new_body.courses.forEach(course_str => {
+    let processed_course_str = process_any_course_str(course_str);
+    if (processed_course_str.length === 0) {
+      processed_course_arr.push(course_str);
+    } else {
+      processed_course_arr = processed_course_arr.concat(processed_course_str);
+    }
+  });
+  new_body.courses = processed_course_arr;
 
   const processed_struct_body: ProcessedStructBody = {
     'name': title,

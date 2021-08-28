@@ -8,7 +8,7 @@ const construct_subject_name_key_obj = (): void => {
     const sub_code: string = key;
     const sub_attrs: {name: string, courses: string[]} = val;
     if (sub_attrs.name in sub_name_key_obj) {
-      sub_name_key_obj[sub_attrs.name] += ' | ' + sub_code;
+      if (sub_attrs.courses.length > 0) sub_name_key_obj[sub_attrs.name] += ' | ' + sub_code;
     } else {
       sub_name_key_obj = {...sub_name_key_obj, ...{[sub_attrs.name]: sub_code}};
     }
