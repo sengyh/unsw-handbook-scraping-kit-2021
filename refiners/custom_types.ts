@@ -105,13 +105,18 @@ export type SpecStructBody = {
 export type ProcessedSpecialisations = Record<string, ProcessedSpecialisation>;
 export type ProcessedSpecialisation = {
   name: string;
-  uoc: number;
-  specialisation_type: string;  
-  programs_available_in: string[];
   overview: string;
-  structure: ProcessedStructBody[];
-  faculty: string;
+  specialisation_type: string;  
+  uoc: number;
+  course_structure: ProcessedStructBody[];
+  more_information: OtherInfoElem[];
+  available_in_programs: string[];
   school: string;
+  faculty: string;
+}
+export type ProcStructObj = {
+  course_structure: ProcessedStructBody[];
+  more_information: OtherInfoElem[];
 }
 export type ProcessedStructBody = {
   name: string;
@@ -119,6 +124,10 @@ export type ProcessedStructBody = {
   description: string;
   courses: string[];
 }
+export type OtherInfoElem = {
+  name: string;
+  description: string;
+} 
 
 
 export type Subjects = Record<string, Subject>;

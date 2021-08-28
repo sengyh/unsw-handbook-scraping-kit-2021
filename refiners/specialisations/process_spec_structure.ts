@@ -1,23 +1,34 @@
-import {} from '../courses/prereq_section_helpers'
-import type { SpecStructure, SpecStructBody, ProcessedStructBody, SubValKeyObj, Schools } from '../custom_types';
-import {clean_course_group_str, construct_unlocked_by_arr} from '../courses/prereq_section_helpers';
+import type { SpecStructure, SpecStructBody, ProcessedStructBody, OtherInfoElem, ProcStructObj } from '../custom_types';
 import { extract_all_found_courses, extract_min_uoc, extract_max_uoc, extract_uoc_range, get_new_uoc } from './spec_element_helper';
 import * as _ from 'lodash';
-import { min } from 'lodash';
 
-export const process_spec_structure = (spec_structure: SpecStructure): void => {
-  let processed_structure_arr: ProcessedStructBody[] = [];
+export const process_spec_structure = (spec_structure: SpecStructure): ProcStructObj => {
+  let course_structure_arr: ProcessedStructBody[] = [];
+  let other_information_arr: OtherInfoElem[] = [];
   for (let [key, val] of Object.entries(spec_structure)) {
     if (key === "default") continue;
     const struct_obj_title: string = key;
     const struct_obj_body: SpecStructBody = val;
-    //const processed_struct_obj_elem: ProcessedStructBody = 
-    construct_spec_element(struct_obj_title, struct_obj_body);
+    const processed_struct_elem: ProcessedStructBody = construct_spec_element(struct_obj_title, struct_obj_body);
+    if (processed_struct_elem.courses.length === 0 && processed_struct_elem.uoc === "") {
+      const misc_info: OtherInfoElem = {
+        name: processed_struct_elem.name, 
+        description: processed_struct_elem.description
+      };
+      other_information_arr.push(misc_info);
+    } else {
+      course_structure_arr.push(processed_struct_elem);
+    }
   }
-  return;
+  const processed_spec_structure_obj: ProcStructObj = {
+    course_structure: course_structure_arr,
+    more_information: other_information_arr
+  };
+  //console.log(JSON.stringify(processed_spec_structure_obj, null,2))
+  return processed_spec_structure_obj;
 }
 
-const construct_spec_element = (title: string, body: SpecStructBody): void => { 
+const construct_spec_element = (title: string, body: SpecStructBody): ProcessedStructBody => { 
   // going to trust (lol) that the handbook ppl know their shit and that they did not leave any courses behind if the section already has courses. also, screw usyd.
   let new_body: SpecStructBody = _.cloneDeep(body);
   if (body.courses.length === 0 && body.description !== "") {
@@ -33,12 +44,13 @@ const construct_spec_element = (title: string, body: SpecStructBody): void => {
     if (new_uoc === "") new_uoc = extract_uoc_range(new_body.description);
     new_body.uoc = new_uoc;
   }
+
   const processed_struct_body: ProcessedStructBody = {
     'name': title,
     'uoc': new_body.uoc,
     'description': new_body.description,
     'courses': new_body.courses
   }
-  console.log(JSON.stringify(processed_struct_body, null,2));
-  return;
+  //console.log(JSON.stringify(processed_struct_body, null,2));
+  return processed_struct_body;
 }
