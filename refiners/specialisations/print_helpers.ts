@@ -11,7 +11,11 @@ const explore_specs = (): void => {
       if (key === 'default') continue;
       const struct_section_title: string = key;
       const struct_section_body: SpecStructBody = val; 
-      no_courses_in_struct_sect(spec_code, struct_section_title, struct_section_body);
+      if (struct_section_body.courses.length > 0) {
+        struct_section_body.courses.forEach(elem => console.log(elem));
+        //console.log(struct_section_body.courses)
+      }
+      //no_courses_in_struct_sect(spec_code, struct_section_title, struct_section_body);
       //no_uoc_in_struct_sect(spec_code, struct_section_title, struct_section_body);
       //dnc_have_courses(spec_code, struct_section_title, struct_section_body);
       //console.log(struct_section_body.description.replaceAll(/\n/gm, '\t\t'));

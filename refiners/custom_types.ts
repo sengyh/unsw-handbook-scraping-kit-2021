@@ -146,3 +146,5 @@ export type Faculty = {
   };
   schools?: string[];
 };
+
+export type SubValKeyObj = Record<string, string>;
