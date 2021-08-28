@@ -6,7 +6,6 @@ import * as fs from 'fs';
 
 // run this file after homogenising specs
 const process_specialisations = (): void => {
-  //let raw_specs: Specialisations = _.cloneDeep(specialisations);
   let processed_specialisations: ProcessedSpecialisations = {};
   for (let [key, val] of Object.entries(specialisations)){
     if (key === 'default') continue;
@@ -15,7 +14,8 @@ const process_specialisations = (): void => {
     const processed_spec: ProcessedSpecialisation = construct_refined_spec(spec_attrs);
     processed_specialisations = {...processed_specialisations, ...{[spec_code]: processed_spec}};
   }
-  console.log(JSON.stringify(processed_specialisations, null, 2));
+  //console.log(JSON.stringify(processed_specialisations, null, 2));
+  fs.writeFileSync('../../data/json/refined_specialisations.json', JSON.stringify(processed_specialisations, null, 2));
   return;
 }
 
