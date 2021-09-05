@@ -129,6 +129,48 @@ export type OtherInfoElem = {
   description: string;
 } 
 
+// ALL PROGRAM TYPES
+export type ProcessedPrograms = Record<string, ProcessedProgram>;
+
+export type ProcessedProgram = {
+  name: string;
+  uoc: number;
+  overview: string;
+  double_degrees: string[];
+  program_duration: string;
+  program_structure_overview: string;
+  
+  core_structure_uoc: number;
+  core_structure_desc: string;
+  core_specialisations: SpecElem[];
+  optional_specialisations: SpecElem[];
+  core_course_component: ProcessedStructBody[];
+  more_courses: ProcessedStructBody[];
+  more_information: OtherInfoElem[];
+
+  faculty: string;
+  intake_period: string;
+  academic_calendar: string;
+};
+
+export type SpecElem = {
+  name: string;
+  description: string;
+  majors?: string[];
+  minors?: string[];
+  honours?: string[];
+}
+
+export type ProcessedProgramStructure = {
+  core_structure_uoc: number;
+  core_structure_desc: string;
+  core_specialisations: SpecElem[];
+  optional_specialisations: SpecElem[];
+  core_course_component: ProcessedStructBody[];
+  more_courses: ProcessedStructBody[];
+  more_information: OtherInfoElem[];
+}
+
 
 export type Subjects = Record<string, Subject>;
 export type Subject = {

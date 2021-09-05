@@ -44,17 +44,17 @@ const process_pstruct_obj = (so_key: string, pstruct_obj_lv2: any): void => {
         //console.log('\t\t' + lv2_key)
       } else {
         if (Array.isArray(psobj_lv2_elem)) {
-          console.log('\t\t\t' + lv2_key)
+          console.log('\t\t\t' + lv2_key + '-' + psobj_lv2_elem.length)
         } else {
-          console.log('\t\t' + lv2_key)
+          //console.log('\t\t' + lv2_key + ': ' + psobj_lv2_elem.replaceAll(/\n/gm, '\t'))
         }
       }
     });
   } else {
     if (Array.isArray(pstruct_obj_lv2)) {
-      console.log('\t\t\t' + so_key)
+      console.log('\t\t\t' + so_key + '-' + pstruct_obj_lv2.length)
     } else {
-      console.log('\t\t' + so_key)
+      //console.log('\t\t' + so_key + ': ' + pstruct_obj_lv2.replaceAll(/\n/gm, '\t'))
     }
   }  
 }
@@ -62,5 +62,6 @@ const process_pstruct_obj = (so_key: string, pstruct_obj_lv2: any): void => {
 const is_object = (suspected_obj: any): boolean => {
   return typeof suspected_obj === 'object' && suspected_obj !== null && !Array.isArray(suspected_obj);
 }
+
 
 restructure_programs();

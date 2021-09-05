@@ -28,7 +28,7 @@ export const process_spec_structure = (spec_structure: SpecStructure): ProcStruc
   return processed_spec_structure_obj;
 }
 
-const construct_spec_element = (title: string, body: SpecStructBody): ProcessedStructBody => { 
+export const construct_spec_element = (title: string, body: SpecStructBody): ProcessedStructBody => { 
   // going to trust (lol) that the handbook ppl know their shit and that they did not leave any courses behind if the section already has courses. also, screw usyd.
   let new_body: SpecStructBody = _.cloneDeep(body);
   if (body.courses.length === 0 && body.description !== "") {

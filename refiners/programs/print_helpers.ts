@@ -1,4 +1,5 @@
 import * as programs from '../../data/json/raw/programs.json';
+import type {} from '../custom_types';
 
 const program_print_helpers = (): void => {
   for (let [key, val] of Object.entries(programs)) {
