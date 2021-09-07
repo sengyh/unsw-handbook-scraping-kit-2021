@@ -139,7 +139,7 @@ export type ProcessedProgram = {
   double_degrees: string[];
   program_duration: string;
   program_structure_overview: string;
-  
+
   core_structure_uoc: number;
   core_structure_desc: string;
   core_specialisations: SpecElem[];
@@ -166,9 +166,16 @@ export type ProcessedProgramStructure = {
   core_structure_desc: string;
   core_specialisations: SpecElem[];
   optional_specialisations: SpecElem[];
-  core_course_component: ProcessedStructBody[];
-  more_courses: ProcessedStructBody[];
+  core_course_component: ProcessedPCourseObj[];
+  more_courses: ProcessedPCourseObj[];
   more_information: OtherInfoElem[];
+}
+export type ProcessedPCourseObj = {
+  name: string;
+  uoc: string; // there could be a min-max range, not sure how else to represent it
+  description: string;
+  courses: string[];
+  course_groups?: any[];
 }
 
 

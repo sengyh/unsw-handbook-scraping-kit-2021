@@ -1,6 +1,5 @@
-import type {ProcessedProgramStructure, ProcessedStructBody, SpecElem, OtherInfoElem} from '../custom_types';
+import type {ProcessedProgramStructure, ProcessedPCourseObj, SpecElem, OtherInfoElem, SpecStructure, SpecStructBody} from '../custom_types';
 import { construct_spec_element } from "../specialisations/process_spec_structure";
-
 
 export const construct_refined_program_structure = (): ProcessedProgramStructure => {
   return {
@@ -36,11 +35,27 @@ export const construct_refined_spec_obj = (curr_obj_key: string, lv2_struct_obj:
   return new_rspec_block;
 }
 
-export const construct_refined_course_obj = (curr_obj_key: string, course_obj_org: any): void => {
-  
-  if ('name' in course_obj_org) {
-    if (curr_obj_key !== course_obj_org.name) console.log(curr_obj_key + ' - ' + course_obj_org.name)
-  } else {
-    console.log('not here')
+export const construct_refined_course_obj = (curr_obj_key: string, course_obj_org: any): ProcessedPCourseObj => {
+  // so far all objects that contains course_groups have 'name' key, so just return obj
+  if ('course_groups' in course_obj_org) {
+    return course_obj_org;
   }
+  let refined_course_obj: ProcessedPCourseObj = {
+    'name': curr_obj_key,
+    'uoc': course_obj_org.uoc,
+    'description': course_obj_org.requirements,
+    'courses': course_obj_org.courses
+  };
+  // do not process any 'blocks' that contains program restrictions (e.g 'max lv1 uoc courses', 'excluded gen ed' and maturity requirements)
+  // todo: refine them into 'misc info' block
+  const misc_info_key_pattern: RegExp = /^(max|minimum and max|(level 1 uoc|level 1 maximum)|LANTITE)|rule|req|excl|maturity/gmi;
+  if (curr_obj_key.match(misc_info_key_pattern)) return refined_course_obj;
+
+  if (course_obj_org.uoc === "" && course_obj_org.courses.length === 0) {
+    //console.log(JSON.stringify(refined_course_obj, null, 2));
+    refined_course_obj = construct_spec_element(curr_obj_key, refined_course_obj);
+    if (curr_obj_key.match(/minimum/gmi)) refined_course_obj.uoc = "";
+    console.log(JSON.stringify(refined_course_obj, null, 2));
+  }
+  return refined_course_obj;
 }

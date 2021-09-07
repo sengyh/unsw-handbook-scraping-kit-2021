@@ -92,6 +92,20 @@ export const process_any_course_str = (any_course_str: string): string[] => {
   const course_pattern_match = any_course_str.match(course_pattern);
   if (course_pattern_match) return [course_pattern_match[0].replaceAll(/#/gm, '_')];
 
+  // program specific implementation
+  const only_sub_pattern: RegExp = /^any ([a-z ]+).*course/gmi
+  const only_sub_arr: string[] = Array.from(any_course_str.matchAll(only_sub_pattern), m => _.trim(m[1]));
+  if (only_sub_arr.length === 1) {
+    let course_code: string = "";
+    const sv_name: SubValKeyObj = sub_val_name;
+    const sub: string = only_sub_arr[0]
+    if (sub in sv_name) {
+      course_code += sv_name[sub];
+      course_code += '____';
+      return [course_code];
+    }
+  }
+
   return [];
 }
 
