@@ -12,25 +12,9 @@ export const process_structure = (program_structure: any): void => {
     const struct_obj = program_structure[key];
     if (is_object(struct_obj)) {
       if (is_double_nested(struct_obj)) {
-        refined_prog_structure = process_double_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists)
+        refined_prog_structure = process_double_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists);
       } else {    
-        if (is_specialisation_block(struct_obj)) {
-          const refined_spec_obj: SpecElem = construct_refined_spec_obj(key, struct_obj);
-          if (key.match(/^Optional/gm)) {
-            refined_prog_structure.optional_specialisations.push(refined_spec_obj);
-          } else {
-            refined_prog_structure.core_specialisations.push(refined_spec_obj);
-          }
-        } else {
-          const is_gened_or_free_elec = key.match(/^general education$|free/gmi)
-          construct_refined_course_obj(key, struct_obj)
-          if (!disciplinary_component_exists) {
-            // put all non free electives & gen eds into core_course_structure
-
-          } else {
-
-          }
-        }
+        refined_prog_structure = process_single_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists);
       }
     }
   })
@@ -38,7 +22,10 @@ export const process_structure = (program_structure: any): void => {
   console.log('\n')
 }
 
-const process_double_nested_obj = (key: string, struct_obj: any, refined_prog_structure: ProcessedProgramStructure, disciplinary_component_exists: boolean): ProcessedProgramStructure => {
+const process_double_nested_obj = (key: string, struct_obj: any, 
+  refined_prog_structure: ProcessedProgramStructure, 
+  disciplinary_component_exists: boolean): ProcessedProgramStructure => {
+
   if (key === 'Disciplinary Component') {
     refined_prog_structure.core_structure_uoc = parseInt(struct_obj.uoc);
     refined_prog_structure.core_structure_desc = struct_obj.requirements;
@@ -58,6 +45,43 @@ const process_double_nested_obj = (key: string, struct_obj: any, refined_prog_st
   return refined_prog_structure
 }
 
+const process_single_nested_obj = (key: string, struct_obj: any, 
+  refined_prog_structure: ProcessedProgramStructure, 
+  disciplinary_component_exists: boolean): ProcessedProgramStructure => {
+
+  if (is_specialisation_block(struct_obj)) {
+    const refined_spec_obj: SpecElem = construct_refined_spec_obj(key, struct_obj);
+    if (key.match(/^Optional/gm)) {
+      refined_prog_structure.optional_specialisations.push(refined_spec_obj);
+    } else {
+      refined_prog_structure.core_specialisations.push(refined_spec_obj);
+    }
+  } else {
+    // is a course obj, if no uoc and courses move to more_information
+    const is_gened_or_free_elec = key.match(/^general education$|free/gmi)
+    const refined_course_obj: ProcessedPCourseObj = construct_refined_course_obj(key, struct_obj);
+    if ((refined_course_obj.courses.length === 0 && refined_course_obj.uoc === "") && !('course_groups' in refined_course_obj)) {
+      const more_info_obj: OtherInfoElem = {
+        'name': refined_course_obj.name,
+        'description': refined_course_obj.description
+      };
+      refined_prog_structure.more_information = refined_prog_structure.more_information.concat(more_info_obj);
+    } else {
+      if (!disciplinary_component_exists) {
+        // put all non free electives & gen eds into core_course_structure
+        if (!is_gened_or_free_elec) {
+          refined_prog_structure.core_course_component = refined_prog_structure.core_course_component.concat(refined_course_obj);
+        } else {
+          refined_prog_structure.misc_course_components = refined_prog_structure.misc_course_components.concat(refined_course_obj);
+        }
+      } else {
+        refined_prog_structure.misc_course_components = refined_prog_structure.misc_course_components.concat(refined_course_obj);
+      }
+    }
+  }
+  return refined_prog_structure;
+}
+
 const process_disciplinary_component = (struct_obj: any, refined_prog_structure: ProcessedProgramStructure): ProcessedProgramStructure => {
   const struct_keys_lv2: string[] = Object.keys(struct_obj);
   struct_keys_lv2.forEach(key => {
@@ -65,10 +89,8 @@ const process_disciplinary_component = (struct_obj: any, refined_prog_structure:
     if (is_object(struct_obj_lv2)) {
       // now check if there are specialistion objects inside
       if (is_specialisation_block(struct_obj_lv2)) {
-        //console.log(struct_obj_lv2.name)
         const spec_block_req: string = struct_obj_lv2.requirements.replaceAll(/\n{2,}/gm, '\n');
         const sbr_first_line: string = spec_block_req.split('\n')[0];
-        //console.log(sbr_first_line + '\n')
         const refined_spec_obj: SpecElem = construct_refined_spec_obj(key, struct_obj_lv2);
         // assigns spec block from disc component into either core or optional spec
         if (sbr_first_line.match(/may/gm)) {
@@ -78,7 +100,17 @@ const process_disciplinary_component = (struct_obj: any, refined_prog_structure:
         }
       } else {
         // process course blocks
-        construct_refined_course_obj(key, struct_obj_lv2)
+        const refined_course_obj: ProcessedPCourseObj = construct_refined_course_obj(key, struct_obj_lv2);
+        if ((refined_course_obj.courses.length === 0 && refined_course_obj.uoc === "") && !('course_groups' in refined_course_obj)) {
+          // move to more information
+          const more_info_obj: OtherInfoElem = {
+            'name': refined_course_obj.name,
+            'description': refined_course_obj.description
+          };
+          refined_prog_structure.more_information = refined_prog_structure.more_information.concat(more_info_obj);
+        } else {
+          refined_prog_structure.core_course_component = refined_prog_structure.core_course_component.concat(refined_course_obj);
+        }
       }
     }
   })

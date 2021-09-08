@@ -10,7 +10,7 @@ export const construct_refined_program_structure = (): ProcessedProgramStructure
     'core_specialisations': [],
     'optional_specialisations': [],
     'core_course_component': [],
-    'more_courses': [],
+    'misc_course_components': [],
     'more_information': [],
   }
 }
@@ -40,19 +40,28 @@ export const construct_refined_spec_obj = (curr_obj_key: string, lv2_struct_obj:
 export const construct_refined_course_obj = (curr_obj_key: string, course_obj_org: any): ProcessedPCourseObj => {
   // so far all objects that contains course_groups have 'name' key, so just return obj
   if ('course_groups' in course_obj_org) {
-    return course_obj_org;
+    return {
+      'name': curr_obj_key,
+      'uoc': course_obj_org.uoc,
+      'description': course_obj_org.requirements,
+      'courses': [],
+      'course_groups': course_obj_org.course_groups
+    };
   }
+
   let refined_course_obj: ProcessedPCourseObj = {
     'name': curr_obj_key,
     'uoc': course_obj_org.uoc,
     'description': course_obj_org.requirements,
     'courses': course_obj_org.courses
   };
+  
   // do not process any 'blocks' that contains program restrictions (e.g 'max lv1 uoc courses', 'excluded gen ed' and maturity requirements)
   // todo: refine them into 'misc info' block
   const misc_info_key_pattern: RegExp = /^(max|minimum and max|(level 1 uoc|level 1 maximum)|LANTITE)|rule|req|excl|maturity/gmi;
   if (curr_obj_key.match(misc_info_key_pattern)) return refined_course_obj;
 
+  // course objs that do not match ^ are processed
   if (course_obj_org.courses.length === 0) {
     refined_course_obj = construct_spec_element(curr_obj_key, refined_course_obj);
     if (curr_obj_key.match(/minimum/gmi)) refined_course_obj.uoc = "";
@@ -68,6 +77,6 @@ export const construct_refined_course_obj = (curr_obj_key: string, course_obj_or
     });
     refined_course_obj.courses = _.uniq(processed_course_arr);
   }
-  console.log(JSON.stringify(refined_course_obj, null, 2));
+  //console.log(JSON.stringify(refined_course_obj, null, 2));
   return refined_course_obj;
 }

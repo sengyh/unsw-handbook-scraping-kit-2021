@@ -145,7 +145,7 @@ export type ProcessedProgram = {
   core_specialisations: SpecElem[];
   optional_specialisations: SpecElem[];
   core_course_component: ProcessedStructBody[];
-  more_courses: ProcessedStructBody[];
+  misc_course_components: ProcessedStructBody[];
   more_information: OtherInfoElem[];
 
   faculty: string;
@@ -167,7 +167,7 @@ export type ProcessedProgramStructure = {
   core_specialisations: SpecElem[];
   optional_specialisations: SpecElem[];
   core_course_component: ProcessedPCourseObj[];
-  more_courses: ProcessedPCourseObj[];
+  misc_course_components: ProcessedPCourseObj[];
   more_information: OtherInfoElem[];
 }
 export type ProcessedPCourseObj = {
