@@ -50,10 +50,20 @@ export const extract_all_found_courses = (body: SpecStructBody): string[] => {
 }
 
 export const process_any_course_str = (any_course_str: string): string[] => {
+  // 'any course'
+  const any_course_pattern: RegExp = /^any course$/gm
+  if (any_course_str.match(any_course_pattern)) {
+    return ['XXXX____'];
+  }
+  // 'any General Education course'
+  const gen_ed_pattern: RegExp = /^any General Education course$/gm
+  if (any_course_str.match(gen_ed_pattern)) {
+    return ['ANYGENED'];
+  }
   // any level X SUB course
   // the design decision i made with sub_val (' | ' delimiter) will come back and bite me in the ass
   // too lazy to fix this, will come back to this later
-  const level_w_sub_pattern: RegExp = /^any (level [0-9]) ([a-z ]+).*course/gmi
+  const level_w_sub_pattern: RegExp = /^any (level [0-9]) ([a-z,& ]+).*course/gmi
   let level_arr: string[] = Array.from(any_course_str.matchAll(level_w_sub_pattern), m => m[1]);
   const sub_arr: string[] = Array.from(any_course_str.matchAll(level_w_sub_pattern), m => _.trim(m[2]));
   if (level_arr.length === 1 && sub_arr.length === 1) {
@@ -63,8 +73,16 @@ export const process_any_course_str = (any_course_str: string): string[] => {
     if (sub in sv_name) {
       // TODO: edge case: ' | ' delimiter, need to split and apply to every element if exists
       course_code += sv_name[sub];
-      course_code += level_arr[0].replace(/level /gmi, '') + '___';
-      return [course_code];
+      if (course_code.match(/ \| /gm)) {
+        return course_code.split(' | ').map(elem => {
+          const sub_code = elem;
+          const fcourse_code = sub_code + level_arr[0].replace(/level /gmi, '') + '___';
+          return fcourse_code;
+        })
+      } else {
+        course_code += level_arr[0].replace(/level /gmi, '') + '___';
+        return [course_code];
+      }  
     }
   }
   // any level X course
@@ -92,8 +110,8 @@ export const process_any_course_str = (any_course_str: string): string[] => {
   const course_pattern_match = any_course_str.match(course_pattern);
   if (course_pattern_match) return [course_pattern_match[0].replaceAll(/#/gm, '_')];
 
-  // program specific implementation
-  const only_sub_pattern: RegExp = /^any ([a-z ]+).*course/gmi
+  // only subject given (yeah i could've refactored but eh)
+  const only_sub_pattern: RegExp = /^any ([a-z,& ]+).*course/gmi
   const only_sub_arr: string[] = Array.from(any_course_str.matchAll(only_sub_pattern), m => _.trim(m[1]));
   if (only_sub_arr.length === 1) {
     let course_code: string = "";
@@ -101,8 +119,16 @@ export const process_any_course_str = (any_course_str: string): string[] => {
     const sub: string = only_sub_arr[0]
     if (sub in sv_name) {
       course_code += sv_name[sub];
-      course_code += '____';
-      return [course_code];
+      if (course_code.match(/ \| /gm)) {
+        return course_code.split(' | ').map(elem => {
+          const sub_code = elem;
+          const fcourse_code = sub_code + '____'
+          return fcourse_code;
+        })
+      } else {
+        course_code += '____';
+        return [course_code];
+      }
     }
   }
 

@@ -10,8 +10,7 @@ export const process_structure = (program_structure: any): void => {
   const struct_keys: string[] = Object.keys(program_structure); 
   struct_keys.forEach(key => {
     const struct_obj = program_structure[key];
-    const is_obj = is_object(struct_obj);
-    if (is_obj) {
+    if (is_object(struct_obj)) {
       if (is_double_nested(struct_obj)) {
         refined_prog_structure = process_double_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists)
       } else {    

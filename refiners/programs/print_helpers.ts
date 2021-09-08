@@ -2,9 +2,8 @@ import * as programs from '../../data/json/raw/programs.json';
 import type {} from '../custom_types';
 
 const program_print_helpers = (): void => {
-  for (let [key, val] of Object.entries(programs)) {
-    if (key === 'default') continue;
-    const prog_code: string = key;
+  for (let [prog_code, val] of Object.entries(programs)) {
+    if (prog_code === 'default') continue;
     const structure: any = val.structure;
     const struct_keys: any[] = Object.keys(structure);
     console.log(prog_code + ': ' + val.name)

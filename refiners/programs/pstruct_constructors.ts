@@ -1,5 +1,7 @@
+import * as _ from 'lodash';
 import type {ProcessedProgramStructure, ProcessedPCourseObj, SpecElem, OtherInfoElem, SpecStructure, SpecStructBody} from '../custom_types';
 import { construct_spec_element } from "../specialisations/process_spec_structure";
+import { process_any_course_str } from '../specialisations/spec_element_helper';
 
 export const construct_refined_program_structure = (): ProcessedProgramStructure => {
   return {
@@ -51,11 +53,24 @@ export const construct_refined_course_obj = (curr_obj_key: string, course_obj_or
   const misc_info_key_pattern: RegExp = /^(max|minimum and max|(level 1 uoc|level 1 maximum)|LANTITE)|rule|req|excl|maturity/gmi;
   if (curr_obj_key.match(misc_info_key_pattern)) return refined_course_obj;
 
-  if (course_obj_org.uoc === "" && course_obj_org.courses.length === 0) {
+  if (course_obj_org.courses.length === 0) {
     //console.log(JSON.stringify(refined_course_obj, null, 2));
     refined_course_obj = construct_spec_element(curr_obj_key, refined_course_obj);
     if (curr_obj_key.match(/minimum/gmi)) refined_course_obj.uoc = "";
-    console.log(JSON.stringify(refined_course_obj, null, 2));
+    //console.log(JSON.stringify(refined_course_obj, null, 2));
+  } else {
+    let processed_course_arr: string[] = [];
+    refined_course_obj.courses.forEach(course_str => {
+      let processed_course_str = process_any_course_str(course_str);
+      if (processed_course_str.length === 0) {
+        processed_course_arr.push(course_str);
+      } else {
+        processed_course_arr = processed_course_arr.concat(processed_course_str);
+      }
+    });
+    refined_course_obj.courses = processed_course_arr;
+    //console.log(JSON.stringify(refined_course_obj, null, 2));
   }
+  console.log(JSON.stringify(refined_course_obj, null, 2));
   return refined_course_obj;
 }
