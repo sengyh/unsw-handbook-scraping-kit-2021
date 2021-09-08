@@ -1,4 +1,4 @@
-import { is_double_nested, check_if_val_name_eq_key, is_object, is_specialisation_block, has_disciplinary_component } from "./pstruct_helpers";
+import { is_double_nested, check_if_val_name_eq_key, is_object, is_specialisation_block, has_disciplinary_component, num_objects_in_obj } from "./pstruct_helpers";
 import { construct_refined_spec_obj, construct_refined_program_structure, construct_refined_course_obj } from "./pstruct_constructors";
 import type {ProcessedProgramStructure, ProcessedPCourseObj, SpecElem, OtherInfoElem} from '../custom_types';
 import * as _ from 'lodash'
@@ -32,15 +32,10 @@ const process_double_nested_obj = (key: string, struct_obj: any,
     refined_prog_structure = process_disciplinary_component(struct_obj, refined_prog_structure);
   } else {
     // this whole bit is super fucking tricky, come back later
-    if (disciplinary_component_exists) {
-      //console.log(key)
-      //console.log(JSON.stringify(struct_obj, null, 2))
-      //console.log('')            
-    } else {
-      //console.log(key)
-      //console.log(JSON.stringify(struct_obj, null, 2))
-      //console.log('')
-    }     
+    // check number of objects
+    // if one is specialisation obj, move to optional
+    process_misc_double_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists);
+        
   }  
   return refined_prog_structure
 }
@@ -115,5 +110,55 @@ const process_disciplinary_component = (struct_obj: any, refined_prog_structure:
     }
   })
   //console.log(JSON.stringify(refined_prog_structure, null, 2));
+  return refined_prog_structure;
+}
+
+const process_misc_double_nested_obj = (key: string, struct_obj: any, 
+    refined_prog_structure: ProcessedProgramStructure,
+    disciplinary_component_exists: boolean): ProcessedProgramStructure => {
+  //console.log(key)
+  //console.log(JSON.stringify(struct_obj, null, 2))
+  //console.log('')
+  console.log(num_objects_in_obj(struct_obj));
+  if (num_objects_in_obj(struct_obj) === 1) {
+    const lv2_keys: string[] = Object.keys(struct_obj);
+    lv2_keys.forEach(lv2_key => {
+      if (is_object(struct_obj[lv2_key])) {
+        const lv2_struct_obj: any = struct_obj[lv2_key];
+        // this is pretty much for 3778 (i had to, this was my degree)
+        if (is_specialisation_block(lv2_struct_obj)) {
+          const new_spec_obj: SpecElem = construct_refined_spec_obj(lv2_key, lv2_struct_obj);
+          refined_prog_structure.optional_specialisations.push(new_spec_obj);
+          struct_obj.courses = [];
+          const new_course_obj: ProcessedPCourseObj = 
+          construct_refined_course_obj(key, struct_obj)
+          refined_prog_structure.misc_course_components.push(new_course_obj)
+          console.log(JSON.stringify(refined_prog_structure, null, 2))
+        } else {
+          // transplant struct_obj's uoc and requirements to lv2_struct_obj
+          lv2_struct_obj.uoc = struct_obj.uoc;
+          lv2_struct_obj.requirements = struct_obj.requirements;
+          const new_course_obj: ProcessedPCourseObj = construct_refined_course_obj(lv2_key, lv2_struct_obj);
+          if (disciplinary_component_exists) {
+            refined_prog_structure.misc_course_components.push(new_course_obj);
+          } else {
+            refined_prog_structure.core_course_component.push(new_course_obj);
+          }
+          console.log(JSON.stringify(refined_prog_structure, null, 2))
+        }
+      }
+    });
+
+  }
+
+  // might have to shift this elsewhere
+  if (disciplinary_component_exists) {
+
+  } else {
+    //console.log(key)
+    //console.log(JSON.stringify(struct_obj, null, 2))
+    //console.log('')
+  } 
+  //console.log(JSON.stringify(refined_prog_structure, null, 2))
   return refined_prog_structure;
 }

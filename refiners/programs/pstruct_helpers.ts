@@ -33,3 +33,12 @@ export const is_specialisation_block = (struct_block: any): boolean => {
   if ('courses' in struct_block || 'course_groups' in struct_block) return false;
   return true;
 }
+
+export const num_objects_in_obj = (struct_obj: any): number => {
+  const keys: string[] = Object.keys(struct_obj);
+  let num_objects: number = 0;
+  keys.forEach(key => {
+    if (is_object(struct_obj[key])) num_objects++;
+  })
+  return num_objects;
+}
