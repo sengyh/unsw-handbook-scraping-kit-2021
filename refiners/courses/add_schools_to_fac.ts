@@ -1,5 +1,5 @@
 import * as faculties from "../../data/json/raw/faculties.json";
-import * as courses from "../../data/json/courses.json";
+import * as courses from "../../data/json/raw/courses.json";
 import _ from "lodash";
 import * as fs from "fs";
 import type { Courses, Course, Faculties } from "../custom_types";

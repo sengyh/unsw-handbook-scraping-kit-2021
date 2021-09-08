@@ -54,10 +54,8 @@ export const construct_refined_course_obj = (curr_obj_key: string, course_obj_or
   if (curr_obj_key.match(misc_info_key_pattern)) return refined_course_obj;
 
   if (course_obj_org.courses.length === 0) {
-    //console.log(JSON.stringify(refined_course_obj, null, 2));
     refined_course_obj = construct_spec_element(curr_obj_key, refined_course_obj);
     if (curr_obj_key.match(/minimum/gmi)) refined_course_obj.uoc = "";
-    //console.log(JSON.stringify(refined_course_obj, null, 2));
   } else {
     let processed_course_arr: string[] = [];
     refined_course_obj.courses.forEach(course_str => {
@@ -68,8 +66,7 @@ export const construct_refined_course_obj = (curr_obj_key: string, course_obj_or
         processed_course_arr = processed_course_arr.concat(processed_course_str);
       }
     });
-    refined_course_obj.courses = processed_course_arr;
-    //console.log(JSON.stringify(refined_course_obj, null, 2));
+    refined_course_obj.courses = _.uniq(processed_course_arr);
   }
   console.log(JSON.stringify(refined_course_obj, null, 2));
   return refined_course_obj;

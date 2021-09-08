@@ -1,4 +1,4 @@
-import * as courses from "../../data/json/courses.json";
+import * as courses from "../../data/json/raw/courses.json";
 import * as subjects from "../../data/json/subjects.json";
 import * as faculties from "../../data/json/faculties.json";
 import * as fs from "fs";

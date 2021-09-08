@@ -1,4 +1,4 @@
-import * as courses from "../../data/json/courses.json";
+import * as courses from "../../data/json/raw/courses.json";
 import type { Course, School, Schools } from "../custom_types";
 import * as fs from "fs";
 

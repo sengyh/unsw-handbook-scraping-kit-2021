@@ -1,7 +1,9 @@
 import * as schools from '../../data/json/schools.json';
 import * as subjects from '../../data/json/subjects.json';
+import * as fac_val_key from '../../data/json/name_to_code/fac_val_key.json';
+import * as faculties from '../../data/json/faculties.json';
 import * as sub_val_name from '../../data/json/name_to_code/subject_val_key.json';
-import type { SpecStructure, SpecStructBody, ProcessedStructBody, SubValKeyObj, Schools } from '../custom_types';
+import type { SpecStructure, SpecStructBody, ProcessedStructBody, SubValKeyObj, Schools, Faculties, Faculty, School } from '../custom_types';
 import {clean_course_group_str, construct_unlocked_by_arr} from '../courses/prereq_section_helpers';
 import * as _ from 'lodash';
 
@@ -53,7 +55,7 @@ export const process_any_course_str = (any_course_str: string): string[] => {
   // 'any course'
   const any_course_pattern: RegExp = /^any course$/gm
   if (any_course_str.match(any_course_pattern)) {
-    return ['XXXX____'];
+    return ['ANYTHING'];
   }
   // 'any General Education course'
   const gen_ed_pattern: RegExp = /^any General Education course$/gm
@@ -132,6 +134,43 @@ export const process_any_course_str = (any_course_str: string): string[] => {
     }
   }
 
+  // faculty or school
+  const offered_by_pattern: RegExp = /^any (level [0-9] )*course offered by (.*)$/gm
+  if (any_course_str.match(offered_by_pattern)) {
+    const fac_or_sch: string = _.trim((Array.from(any_course_str.matchAll(/^any .*course offered by (.*)$/gm), m => m[1])[0]));
+    const fv_key: SubValKeyObj = fac_val_key;
+    let school_arr: string[] = [];
+    if (fac_or_sch in fac_val_key) {
+      const fac_code:string = fv_key[fac_or_sch];
+      const facs: Faculties = faculties;
+      const fac: Faculty = facs[fac_code];
+      const schools_in_fac = fac.schools;
+      schools_in_fac?.forEach(school => school_arr.push(school))
+    } else {
+      school_arr.push(fac_or_sch);
+    }
+    let subject_arr: string[] = [];
+    school_arr.forEach(school => {
+      const schs: Schools = schools;
+      const sch: School = schs[school];
+      const subjects: string[] = sch.subjects;
+      subjects.forEach(sub => subject_arr.push(sub))
+    })
+    let level: string = "";
+    if (any_course_str.match(/^any (level [0-9]).*/gm)) {
+      const found_level: string = (Array.from(any_course_str.matchAll(/^any (level [0-9]).*/gm), m => m[1])[0]).replace(/level /gmi, '');
+      level = found_level;
+    }
+    let final_course_codes: string[] = [];
+    subject_arr.forEach(sub => {
+      if (level === "") {
+        final_course_codes.push(sub + '____');
+      } else {
+        final_course_codes.push(sub + level + '___')
+      }
+    });
+    return final_course_codes;
+  }
   return [];
 }
 

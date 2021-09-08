@@ -54,7 +54,7 @@ export const construct_spec_element = (title: string, body: SpecStructBody): Pro
       processed_course_arr = processed_course_arr.concat(processed_course_str);
     }
   });
-  new_body.courses = processed_course_arr;
+  new_body.courses = _.uniq(processed_course_arr);
 
   const processed_struct_body: ProcessedStructBody = {
     'name': title,
