@@ -1,1 +1,4 @@
 need to run construct_fac_val_key_json.ts before running process_programs.ts
+
+more information
+this program does it's best to 'flatten' the course structure but it's by no means 100% correct

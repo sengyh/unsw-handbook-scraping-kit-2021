@@ -5,6 +5,7 @@ import { process_any_course_str } from '../specialisations/spec_element_helper';
 
 export const construct_refined_program_structure = (): ProcessedProgramStructure => {
   return {
+    'program_structure_overview': "",
     'core_structure_uoc': 0,
     'core_structure_desc': "",
     'core_specialisations': [],

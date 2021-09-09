@@ -133,13 +133,14 @@ export type OtherInfoElem = {
 export type ProcessedPrograms = Record<string, ProcessedProgram>;
 
 export type ProcessedProgram = {
+  code: string;
   name: string;
   uoc: number;
   overview: string;
   double_degrees: string[];
-  program_duration: string;
-  program_structure_overview: string;
+  program_duration: number;
 
+  program_structure_overview: string;
   core_structure_uoc: number;
   core_structure_desc: string;
   core_specialisations: SpecElem[];
@@ -149,8 +150,11 @@ export type ProcessedProgram = {
   more_information: OtherInfoElem[];
 
   faculty: string;
-  intake_period: string;
+  campus: string;
+  intake_period: string[];
   academic_calendar: string;
+  award: string;
+  award_type: string;
 };
 
 export type SpecElem = {
@@ -162,6 +166,7 @@ export type SpecElem = {
 }
 
 export type ProcessedProgramStructure = {
+  program_structure_overview: string;
   core_structure_uoc: number;
   core_structure_desc: string;
   core_specialisations: SpecElem[];

@@ -3,9 +3,10 @@ import { construct_refined_spec_obj, construct_refined_program_structure, constr
 import type {ProcessedProgramStructure, ProcessedPCourseObj, SpecElem, OtherInfoElem} from '../custom_types';
 import * as _ from 'lodash'
 
-export const process_structure = (program_structure: any): void => {
+export const process_structure = (program_structure: any): ProcessedProgramStructure => {
   // initialise 
   let refined_prog_structure: ProcessedProgramStructure = construct_refined_program_structure();
+  refined_prog_structure.program_structure_overview = program_structure.overview;
   const disciplinary_component_exists: boolean = has_disciplinary_component(program_structure);
   const struct_keys: string[] = Object.keys(program_structure); 
   struct_keys.forEach(key => {
@@ -19,7 +20,8 @@ export const process_structure = (program_structure: any): void => {
     }
   })
   //console.log(JSON.stringify(refined_prog_structure, null, 2))
-  console.log('\n')
+  //console.log('\n')
+  return refined_prog_structure;
 }
 
 const process_double_nested_obj = (key: string, struct_obj: any, 
@@ -31,11 +33,7 @@ const process_double_nested_obj = (key: string, struct_obj: any,
     refined_prog_structure.core_structure_desc = struct_obj.requirements;
     refined_prog_structure = process_disciplinary_component(struct_obj, refined_prog_structure);
   } else {
-    // this whole bit is super fucking tricky, come back later
-    // check number of objects
-    // if one is specialisation obj, move to optional
-    process_misc_double_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists);
-        
+    refined_prog_structure = process_misc_double_nested_obj(key, struct_obj, refined_prog_structure, disciplinary_component_exists);
   }  
   return refined_prog_structure
 }
@@ -60,17 +58,17 @@ const process_single_nested_obj = (key: string, struct_obj: any,
         'name': refined_course_obj.name,
         'description': refined_course_obj.description
       };
-      refined_prog_structure.more_information = refined_prog_structure.more_information.concat(more_info_obj);
+      refined_prog_structure.more_information.push(more_info_obj);
     } else {
       if (!disciplinary_component_exists) {
         // put all non free electives & gen eds into core_course_structure
         if (!is_gened_or_free_elec) {
-          refined_prog_structure.core_course_component = refined_prog_structure.core_course_component.concat(refined_course_obj);
+          refined_prog_structure.core_course_component.push(refined_course_obj);
         } else {
-          refined_prog_structure.misc_course_components = refined_prog_structure.misc_course_components.concat(refined_course_obj);
+          refined_prog_structure.misc_course_components.push(refined_course_obj);
         }
       } else {
-        refined_prog_structure.misc_course_components = refined_prog_structure.misc_course_components.concat(refined_course_obj);
+        refined_prog_structure.misc_course_components.push(refined_course_obj);
       }
     }
   }
@@ -102,9 +100,9 @@ const process_disciplinary_component = (struct_obj: any, refined_prog_structure:
             'name': refined_course_obj.name,
             'description': refined_course_obj.description
           };
-          refined_prog_structure.more_information = refined_prog_structure.more_information.concat(more_info_obj);
+          refined_prog_structure.more_information.push(more_info_obj);
         } else {
-          refined_prog_structure.core_course_component = refined_prog_structure.core_course_component.concat(refined_course_obj);
+          refined_prog_structure.core_course_component.push(refined_course_obj);
         }
       }
     }
@@ -116,10 +114,6 @@ const process_disciplinary_component = (struct_obj: any, refined_prog_structure:
 const process_misc_double_nested_obj = (key: string, struct_obj: any, 
     refined_prog_structure: ProcessedProgramStructure,
     disciplinary_component_exists: boolean): ProcessedProgramStructure => {
-  console.log(key)
-  console.log(JSON.stringify(struct_obj, null, 2))
-  console.log(num_objects_in_obj(struct_obj));
-
   if (num_objects_in_obj(struct_obj) === 1) {
     const lv2_keys: string[] = Object.keys(struct_obj);
     lv2_keys.forEach(lv2_key => {
@@ -205,7 +199,5 @@ const process_misc_double_nested_obj = (key: string, struct_obj: any,
       refined_prog_structure.more_information.push(new_more_info_obj);
     }
   }
-  console.log('AFTER')
-  console.log(JSON.stringify(refined_prog_structure, null, 2))
   return refined_prog_structure;
 }
