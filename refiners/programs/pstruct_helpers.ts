@@ -42,3 +42,16 @@ export const num_objects_in_obj = (struct_obj: any): number => {
   })
   return num_objects;
 }
+
+export const num_spec_obj_in_struct_obj = (struct_obj: any): number => {
+  const lv2_keys: string[] = Object.keys(struct_obj);
+  let num_spec_objs: number = 0;
+  lv2_keys.forEach(lv2_key => {
+    if (is_object(struct_obj[lv2_key])) {
+      if (is_specialisation_block(struct_obj[lv2_key])) {
+        num_spec_objs++;
+      }
+    }
+  });
+  return num_spec_objs;
+}

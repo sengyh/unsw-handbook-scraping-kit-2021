@@ -151,6 +151,9 @@ export const process_any_course_str = (any_course_str: string): string[] => {
     }
     let subject_arr: string[] = [];
     school_arr.forEach(school => {
+      if (school === 'UC School of Humanities & Social Sciences') {
+        school = school.replace(/ & /gm, ' and ');
+      }
       const schs: Schools = schools;
       const sch: School = schs[school];
       const subjects: string[] = sch.subjects;

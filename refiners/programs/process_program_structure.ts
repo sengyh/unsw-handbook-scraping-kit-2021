@@ -116,10 +116,10 @@ const process_disciplinary_component = (struct_obj: any, refined_prog_structure:
 const process_misc_double_nested_obj = (key: string, struct_obj: any, 
     refined_prog_structure: ProcessedProgramStructure,
     disciplinary_component_exists: boolean): ProcessedProgramStructure => {
-  //console.log(key)
-  //console.log(JSON.stringify(struct_obj, null, 2))
-  //console.log('')
+  console.log(key)
+  console.log(JSON.stringify(struct_obj, null, 2))
   console.log(num_objects_in_obj(struct_obj));
+
   if (num_objects_in_obj(struct_obj) === 1) {
     const lv2_keys: string[] = Object.keys(struct_obj);
     lv2_keys.forEach(lv2_key => {
@@ -133,7 +133,6 @@ const process_misc_double_nested_obj = (key: string, struct_obj: any,
           const new_course_obj: ProcessedPCourseObj = 
           construct_refined_course_obj(key, struct_obj)
           refined_prog_structure.misc_course_components.push(new_course_obj)
-          console.log(JSON.stringify(refined_prog_structure, null, 2))
         } else {
           // transplant struct_obj's uoc and requirements to lv2_struct_obj
           lv2_struct_obj.uoc = struct_obj.uoc;
@@ -144,21 +143,69 @@ const process_misc_double_nested_obj = (key: string, struct_obj: any,
           } else {
             refined_prog_structure.core_course_component.push(new_course_obj);
           }
-          console.log(JSON.stringify(refined_prog_structure, null, 2))
         }
       }
     });
-
+  } else if (num_objects_in_obj(struct_obj) > 1) {
+    // absolutely horrendous
+    if (num_objects_in_obj(struct_obj) === 2) {
+      const lv2_keys: string[] = Object.keys(struct_obj);
+      lv2_keys.forEach(lv2_key => {
+        const lv2_struct_obj: any = struct_obj[lv2_key];
+        if (is_object(lv2_struct_obj)) {
+          if (is_specialisation_block(lv2_struct_obj)) {
+            const new_spec_obj: SpecElem = construct_refined_spec_obj(lv2_key, lv2_struct_obj);
+            refined_prog_structure.optional_specialisations.push(new_spec_obj);
+          } else {
+            // edge case for program 4405 (damn you canberra)
+            if (lv2_key.match(/^Maximum/gm)) {
+              const new_more_info_obj: OtherInfoElem = {
+                'name': lv2_struct_obj.name,
+                'description': lv2_struct_obj.requirements + '\n' + lv2_struct_obj.courses[0]
+              }
+              refined_prog_structure.more_information.push(new_more_info_obj);
+            } else if (lv2_key.match(/^Minimum/gm)) {
+              const new_course_obj: ProcessedPCourseObj = construct_refined_course_obj(lv2_key, lv2_struct_obj);
+              refined_prog_structure.misc_course_components.push(new_course_obj);
+              struct_obj.courses = [];
+              const free_elec_course_obj: ProcessedPCourseObj = construct_refined_course_obj(key, struct_obj);
+              refined_prog_structure.misc_course_components.push(free_elec_course_obj);
+            } else {
+              lv2_struct_obj.uoc = struct_obj.uoc;
+              if (lv2_struct_obj.requirements === "") {
+                lv2_struct_obj.requirements = struct_obj.requirements;
+              }
+              const new_course_obj: ProcessedPCourseObj = construct_refined_course_obj(lv2_key, lv2_struct_obj);
+              refined_prog_structure.misc_course_components.push(new_course_obj);
+            }
+          }
+        }
+      });
+      // pretty much will only be used for program 7004
+      if (!(key.match(/^free electives$/gmi))) {
+        const new_more_info_obj: OtherInfoElem = {
+          'name': key,
+          'description': struct_obj.requirements
+        }
+        refined_prog_structure.more_information.push(new_more_info_obj);
+      }
+    } else if (num_objects_in_obj(struct_obj) === 7) {
+      const lv2_keys: string[] = Object.keys(struct_obj);
+      lv2_keys.forEach(lv2_key => {
+        const lv2_struct_obj: any = struct_obj[lv2_key];
+        if (is_object(lv2_struct_obj)) {
+          const new_course_obj: ProcessedPCourseObj = construct_refined_course_obj(lv2_key, lv2_struct_obj);
+          refined_prog_structure.misc_course_components.push(new_course_obj);
+        }
+      });
+      const new_more_info_obj: OtherInfoElem = {
+        'name': key,
+        'description': struct_obj.requirements
+      }
+      refined_prog_structure.more_information.push(new_more_info_obj);
+    }
   }
-
-  // might have to shift this elsewhere
-  if (disciplinary_component_exists) {
-
-  } else {
-    //console.log(key)
-    //console.log(JSON.stringify(struct_obj, null, 2))
-    //console.log('')
-  } 
-  //console.log(JSON.stringify(refined_prog_structure, null, 2))
+  console.log('AFTER')
+  console.log(JSON.stringify(refined_prog_structure, null, 2))
   return refined_prog_structure;
 }
