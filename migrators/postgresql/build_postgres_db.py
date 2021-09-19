@@ -6,29 +6,33 @@ from sqlalchemy.orm import session, sessionmaker
 from sqlalchemy.sql.expression import insert
 from dotenv import load_dotenv
 from schema import Base
-from convert_json_to_sql import insert_courses, insert_specialisations, insert_fac_sch, insert_subjects
+from convert_json_to_sql import insert_courses, insert_specialisations, insert_fac_sch, insert_subjects, insert_degrees
 
 
 
 def construct_db():
   engine = initialise_db()
   Session = sessionmaker(bind=engine)
-  #insert_fac_sch(Session)
-  #insert_subjects(Session)
+  insert_fac_sch(Session)
+  insert_subjects(Session)
+  insert_courses(Session)
+  insert_specialisations(Session)
+  insert_degrees(Session)
   return;
 
 
 def initialise_db():
   DATABASE_URI = generate_db_uri()
   engine = create_engine(DATABASE_URI)
-  #wipe_db(engine)
+  wipe_db(engine)
+  #engine.execute('DROP TABLE IF EXISTS degrees')
   Base.metadata.create_all(engine)
   return engine
 
 def wipe_db(engine):
   tables = ['courses', 'subjects', 'schools', 'faculties', 'faculty_to_school', 
-  'specialisations', 'degrees', 'campus', 'course_table', 'course_unlocks', 
-  'school_to_subjects', 'schools_to_subjects']
+  'specialisations', 'degrees', 'campus', 'course_unlocks','schools_to_subjects', 
+  'course_terms']
   for table in tables:
     drop_query = "DROP TABLE IF EXISTS " + table + " CASCADE"
     print(drop_query)

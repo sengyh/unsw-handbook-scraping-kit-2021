@@ -52,7 +52,7 @@ class Course(Base):
   is_multi_term = Column(Boolean)
 
 class CourseTerm(Base):
-  __tablename__ = 'course_table'
+  __tablename__ = 'course_terms'
   course = Column(String, ForeignKey('courses.code'))
   term = Column(String)
   __table_args__ = (PrimaryKeyConstraint('course', 'term'),)
@@ -83,6 +83,7 @@ class Program(Base):
   duration = Column(Integer)
   structure_overview = Column(String)
   core_structure_uoc = Column(Integer)
+  core_structure_desc = Column(String)
   core_specialisations = Column(postgresql.ARRAY(postgresql.JSON))
   optional_specialisations = Column(postgresql.ARRAY(postgresql.JSON))
   core_course_components = Column(postgresql.ARRAY(postgresql.JSON))
